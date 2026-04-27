@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/publishFragment"
+        android:icon="@drawable/add_menu"
+        android:title="Publier" />
+    <item
+        android:id="@+id/groupsFragment"
+        android:icon="@drawable/group"
+        android:title="Groupes" />
+    <item
+        android:id="@+id/feedFragment"
+        android:icon="@drawable/home"
+        android:title="Accueil" />
+    <item
+        android:id="@+id/searchFragment"
+        android:icon="@drawable/search"
+        android:title="Recherche" />
+</menu>

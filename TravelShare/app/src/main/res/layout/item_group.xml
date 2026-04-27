@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:layout_marginEnd="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/group_profil_picture"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:contentDescription="Profil picture"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/group_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="4dp"
+            android:text="Nom du groupe"
+            android:textStyle="bold"
+            tools:text="Groupe du test"
+            app:layout_constraintStart_toEndOf="@+id/group_profil_picture"
+            app:layout_constraintTop_toTopOf="@+id/group_profil_picture" />
+
+        <TextView
+            android:id="@+id/group_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Il y a 2 heures"
+            android:textColor="#757575"
+            android:textSize="12sp"
+            tools:text="Il y a 5 heures"
+            app:layout_constraintBottom_toBottomOf="@+id/group_name"
+            app:layout_constraintStart_toEndOf="@+id/group_name"
+            app:layout_constraintTop_toTopOf="@+id/group_name" />
+
+        <TextView
+            android:id="@+id/group_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="4dp"
+            android:text="C'était un voyage magnifique au bor..."
+            tools:text="C'était un voyage magnifique au bor..."
+            app:layout_constraintBottom_toBottomOf="@+id/group_profil_picture"
+            app:layout_constraintEnd_toStartOf="@+id/btn_group"
+            app:layout_constraintStart_toStartOf="@+id/group_name"
+            app:layout_constraintTop_toBottomOf="@+id/group_name" />
+
+        <ImageButton
+            android:id="@+id/btn_group"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Accéder au groupe"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/comment"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

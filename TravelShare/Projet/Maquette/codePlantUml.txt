@@ -1,0 +1,75 @@
+@startuml
+' --- Configuration visuelle ---
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam nodesep 20
+skinparam ranksep 70
+
+' --- ACTEURS UTILISATEURS(À GAUCHE) ---
+package "Acteurs Utilisateurs" {
+    actor "Anonyme" <<Utilisateur>> as UA
+    actor "Connecté" <<Utilisateur>> as UC
+}
+
+UA <|-- UC
+
+' --- SYSTÈME ---
+rectangle "TravelShare" {
+
+    package "Exploration & Recherche" {
+        usecase "Rechercher des photos\n(Filtres / Texte / Vocal)" as UC_Search
+        usecase "Naviguer (Carte / Liste / Grille)" as UC_Browse
+        usecase "Consulter Itinéraire" as UC_Route
+        usecase "Interagir (Like / Signaler)" as UC_Interact
+    }
+
+    package "Authentification" {
+        usecase "S'inscrire / Se Connecter" as UC_Auth
+    }
+
+    package "Gestion des Photos" {
+        usecase "Publier & Partager une photo" as UC_Publish
+        usecase "Annoter (Texte/Audio/IA)" as UC_Annotate
+        usecase "Commenter" as UC_Comment
+        usecase "Gérer la visibilité\n(Public / Groupes)" as UC_Visibility
+    }
+
+    package "Gestion Sociale & Groupes" {
+        usecase "Gérer les Groupes\n(Création/Adhésion)" as UC_Groups
+        usecase "Configurer les Notifications" as UC_Notif
+    }
+}
+
+' --- SERVICES EXTERNES (À DROITE) ---
+package "Services Externes" {
+    actor "Service Maps" <<Système>> as Maps
+    actor "IA (Annotation)" <<Système>> as IA
+}
+
+' --- CONNEXIONS ---
+
+' Liens Utilisateurs -> Cas d'utilisation
+UA -- UC_Search
+UA -- UC_Browse
+UA -- UC_Interact
+UA -- UC_Auth
+
+UC -- UC_Publish
+UC -- UC_Comment
+UC -- UC_Groups
+UC -- UC_Notif
+
+' Liens Cas d'utilisation -> Services
+UC_Route -- Maps
+UC_Annotate -- IA
+
+' Relations de dépendance
+UC_Interact <.. UC_Route : <<extend>>
+UC_Publish ..> UC_Visibility : <<include>>
+UC_Publish <.. UC_Annotate : <<extend>>
+
+' Alignements forcés pour la propreté
+UA -[hidden]down- UC
+IA -[hidden]down- Maps
+@enduml

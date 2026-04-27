@@ -1,0 +1,113 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/feedFragment"> <fragment
+    android:id="@+id/feedFragment"
+    android:name="com.example.travelshare.view.fragments.navigation.FeedFragment"
+    android:label="Accueil"
+    tools:layout="@layout/fragment_feed" />
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.travelshare.view.fragments.navigation.SearchFragment"
+        android:label="Rechercher"
+        tools:layout="@layout/fragment_search" />
+
+    <fragment
+        android:id="@+id/groupsFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupListFragment"
+        android:label="Mes Groupes"
+        tools:layout="@layout/fragment_group_list">
+        <action
+            android:id="@+id/action_groupsFragment_to_groupDetailFragment"
+            app:destination="@+id/groupDetailFragment" />
+        <action
+            android:id="@+id/action_groupsFragment_to_groupCreateFragment"
+            app:destination="@+id/groupCreateFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/publishFragment"
+        android:name="com.example.travelshare.view.fragments.navigation.PublishFragment"
+        android:label="Nouvelle publication"
+        tools:layout="@layout/fragment_publish" />
+
+    <fragment
+        android:id="@+id/groupDetailFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupDetailFragment"
+        android:label="Détail du Groupe"
+        tools:layout="@layout/fragment_group_detail">
+        <action
+            android:id="@+id/action_groupDetailFragment_to_groupGestionFragment"
+            app:destination="@+id/groupGestionFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/groupGestionFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupGestionFragment"
+        android:label="Gestion du Groupe"
+        tools:layout="@layout/fragment_group_gestion" />
+
+    <fragment
+        android:id="@+id/groupCreateFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupCreateFragment"
+        android:label="Création d'un Groupe"
+        tools:layout="@layout/fragment_group_create">
+        <action
+            android:id="@+id/action_groupCreateFragment_to_groupDetailFragment"
+            app:destination="@id/groupDetailFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.travelshare.view.fragments.auth.ProfileFragment"
+        android:label="Profil"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_profileEditFragment"
+            app:destination="@id/profileModifyFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="com.example.travelshare.view.fragments.detail.PhotoDetailFragment"
+        android:label="Détail du Post"
+        tools:layout="@layout/fragment_post_detail" />
+
+    <fragment
+        android:id="@+id/profileModifyFragment"
+        android:name="com.example.travelshare.view.fragments.auth.ProfileModifyFragment"
+        android:label="Modifier le profil"
+        tools:layout="@layout/fragment_profile__modify" />
+
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.example.travelshare.view.fragments.auth.AuthFragment"
+        android:label="Connexion"
+        tools:layout="@layout/fragment_auth">
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.travelshare.view.fragments.auth.AuthCreationFragment"
+        android:label="Inscription"
+        tools:layout="@layout/fragment_auth_creation" />
+
+    <action
+        android:id="@+id/action_global_to_profileFragment"
+        app:destination="@id/profileFragment" />
+
+    <action
+        android:id="@+id/action_global_to_postDetailFragment"
+        app:destination="@id/postDetailFragment" />
+
+    <action
+        android:id="@+id/action_global_to_groupDetailFragment"
+        app:destination="@id/groupDetailFragment" />
+
+
+</navigation>

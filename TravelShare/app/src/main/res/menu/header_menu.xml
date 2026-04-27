@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/header_login"
+        android:title="Connexion"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/header_profile"
+        android:title="Compte"
+        app:actionLayout="@layout/item_header_profile_icon"
+        app:showAsAction="always"/>
+
+</menu>

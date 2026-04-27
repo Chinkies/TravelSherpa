@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.fragments.auth.AuthCreationFragment">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/auth_creation_image_app"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="36dp"
+                android:layout_marginEnd="48dp"
+                android:contentDescription="Image de l'application"
+                android:src="@drawable/img_app"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/auth_creation_title_app"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Travel Sherpa"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/auth_creation_image_app"/>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/auth_creation_title_app"
+                app:layout_constraintVertical_bias="0.1">
+
+                <TextView
+                    android:id="@+id/auth_creation_title_inscription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Inscription"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/auth_creation_connection_instruction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Entrez votre email ainsi que votre mot de passe"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/auth_creation_title_inscription" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/auth_creation_container_pseudo"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:boxStrokeColor="#757575"
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="@+id/auth_creation_connection_instruction"
+                    app:layout_constraintStart_toStartOf="@+id/auth_creation_connection_instruction"
+                    app:layout_constraintTop_toBottomOf="@+id/auth_creation_connection_instruction">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/auth_creation_pseudo_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:hint="Pseudo (ex: GlobeTrotter)"
+                        android:inputType="textPersonName" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/auth_creation_container_email"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:boxStrokeColor="#757575"
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="@+id/auth_creation_connection_instruction"
+                    app:layout_constraintStart_toStartOf="@+id/auth_creation_container_pseudo"
+                    app:layout_constraintTop_toBottomOf="@+id/auth_creation_container_pseudo">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/auth_creation_text_email_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:hint="email@email.com"
+                        android:inputType="text" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/auth_creation_password"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:boxStrokeColor="#757575"
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="@+id/auth_creation_container_email"
+                    app:layout_constraintStart_toStartOf="@+id/auth_creation_container_email"
+                    app:layout_constraintTop_toBottomOf="@+id/auth_creation_container_email">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/auth_creation_password_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:hint="Mot de passe"
+                        android:inputType="text|textPassword" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/auth_creation_container_confirmation"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:boxStrokeColor="#757575"
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="@+id/auth_creation_password"
+                    app:layout_constraintStart_toStartOf="@+id/auth_creation_password"
+                    app:layout_constraintTop_toBottomOf="@+id/auth_creation_password">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/auth_creation_text_confirmation_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:hint="Confirmer votre mot de passe"
+                        android:inputType="text|textPassword" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/auth_creation_button_inscription"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:paddingHorizontal="24dp"
+                    android:text="Continuer"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    app:backgroundTint="#FF8400"
+                    app:cornerRadius="24dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/auth_creation_container_confirmation"
+                    app:strokeWidth="2dp" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+</FrameLayout>
