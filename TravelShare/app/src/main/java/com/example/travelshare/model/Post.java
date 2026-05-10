@@ -16,6 +16,7 @@ public class Post {
     private Date date;
     private String imageUrl;
     private String authorProfilPictureUrl;
+    private List<String> likers;
     private int likesCount;
 
     private int commentCount;
@@ -34,6 +35,7 @@ public class Post {
         this.date = new Date();
         this.imageUrl = imageUrl;
         this.authorProfilPictureUrl = authorProfilPictureUrl;
+        this.likers = new ArrayList<>();
         this.likesCount = 0;
         this.commentCount = 0;
         this.isPublic = isPublic;
@@ -49,6 +51,7 @@ public class Post {
     public Date getDate() { return date; }
     public String getImageUrl() { return imageUrl; }
     public String getAuthorProfilPictureUrl() { return authorProfilPictureUrl; }
+    public List<String> getLikers() { return likers; }
     public int getLikesCount() { return likesCount; }
     public int getCommentCount() { return commentCount; }
     public boolean isPublic() { return isPublic; }
@@ -63,6 +66,7 @@ public class Post {
     public void setDate(Date date) { this.date = date; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public void setAuthorProfilPictureUrl(String authorProfilPictureUrl) { this.authorProfilPictureUrl = authorProfilPictureUrl; }
+    public void setLikers(List<String> likers) { this.likers = likers; }
     public void setLikesCount(int likesCount) { this.likesCount = likesCount; }
     public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
     public void setPublic(boolean isPublic) { this.isPublic = isPublic; }

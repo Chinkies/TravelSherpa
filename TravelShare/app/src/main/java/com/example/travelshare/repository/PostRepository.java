@@ -77,4 +77,20 @@ public class PostRepository {
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
+
+    public void toggleLike(String postId, String userId, boolean isLiked, FireStoreCallBack<Void> callBack) {
+        DocumentReference postReference = db.collection(COLLECTION_POSTS).document(postId);
+
+        if (isLiked) {
+            postReference.update(
+                    "likesCount", FieldValue.increment(1),
+                    "likers", FieldValue.arrayUnion(userId)
+            ).addOnSuccessListener(v -> callBack.onSuccess(null));
+        } else {
+            postReference.update(
+                    "likesCount", FieldValue.increment(-1),
+                    "likers", FieldValue.arrayRemove(userId)
+            ).addOnSuccessListener(v -> callBack.onSuccess(null));
+        }
+    }
 }

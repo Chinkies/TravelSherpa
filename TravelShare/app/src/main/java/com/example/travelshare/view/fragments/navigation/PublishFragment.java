@@ -32,6 +32,7 @@ import com.example.travelshare.model.Post;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.GroupViewModel;
 import com.example.travelshare.viewmodel.PostViewModel;
+import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -54,6 +55,9 @@ public class PublishFragment extends Fragment {
     private PostViewModel postViewModel;
     private GroupViewModel groupViewModel;
     private AuthViewModel authViewModel;
+    private UserViewModel userViewModel;
+
+    private MaterialButton btnPublish, btnAddGroup;
 
     private ActivityResultLauncher<String> pickImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -78,6 +82,7 @@ public class PublishFragment extends Fragment {
         postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
         groupViewModel = new ViewModelProvider(requireActivity()).get(GroupViewModel.class);
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         FirebaseUser user = authViewModel.getCurrentUser();
         if (user != null) {
@@ -95,8 +100,8 @@ public class PublishFragment extends Fragment {
         inputIndication = view.findViewById(R.id.publish_indication_input);
         groupRadio = view.findViewById(R.id.publish_group_visibility);
         recyclerGroups = view.findViewById(R.id.publish_group_recycler);
-        MaterialButton btnPublish = view.findViewById(R.id.publish_button_publish);
-        MaterialButton btnAddGroup = view.findViewById(R.id.publish_group_add);
+        btnPublish = view.findViewById(R.id.publish_button_publish);
+        btnAddGroup = view.findViewById(R.id.publish_group_add);
 
         view.findViewById(R.id.publish_card_btn_photo).setOnClickListener(
                 v -> pickImage.launch("image/*")
@@ -145,11 +150,9 @@ public class PublishFragment extends Fragment {
     private void publishPost() {
         String description = inputDescription.getText().toString();
         String indication = inputIndication.getText().toString();
-        GeoPoint geoPoint = getLocationFromAddress(inputLocalisation.getText().toString());
+        String address = inputLocalisation.getText().toString();
 
-        com.example.travelshare.model.User firestoreUser =
-                new ViewModelProvider(requireActivity()).get(com.example.travelshare.viewmodel.UserViewModel.class)
-                        .getSelectedUser().getValue();
+        com.example.travelshare.model.User firestoreUser = userViewModel.getSelectedUser().getValue();
 
         if (firestoreUser == null) {
             Toast.makeText(getContext(), "Données utilisateur non chargées, réessayez...", Toast.LENGTH_SHORT).show();
@@ -161,6 +164,8 @@ public class PublishFragment extends Fragment {
             return;
         }
 
+        btnPublish.setEnabled(false);
+
         List<String> selectedGroupIds = new ArrayList<>();
         for (Group g : selectedGroupAdapter.getSelectedGroups()) {
             selectedGroupIds.add(g.getGroupId());
@@ -170,7 +175,7 @@ public class PublishFragment extends Fragment {
                 firestoreUser.getId(),
                 firestoreUser.getPseudo(),
                 description,
-                geoPoint,
+                null,
                 indication,
                 "",
                 firestoreUser.getProfilePictureUrl(),
@@ -178,26 +183,8 @@ public class PublishFragment extends Fragment {
                 selectedGroupIds
         );
 
-        postViewModel.publishPost(newPost, selectecImageUri);
-    }
-
-    private GeoPoint getLocationFromAddress(String strAddress) {
-        android.location.Geocoder coder = new android.location.Geocoder(requireContext());
-        List<android.location.Address> address;
-        GeoPoint p1 = null;
-
-        try {
-            address = coder.getFromLocationName(strAddress, 1);
-            if (address == null || address.isEmpty()) {
-                return null;
-            }
-            android.location.Address location = address.get(0);
-            p1 = new GeoPoint(location.getLatitude(), location.getLongitude());
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return p1;
+        postViewModel.publishPost(newPost, selectecImageUri, address, requireContext());
+        btnPublish.setEnabled(true);
     }
 
     private void showAddGroupSheet() {

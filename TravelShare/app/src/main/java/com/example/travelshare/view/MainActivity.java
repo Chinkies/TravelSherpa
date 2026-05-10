@@ -72,6 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
         authViewModel.getUser().observe(this, firebaseUser -> {
             isUserLogged = (firebaseUser != null);
+            if (firebaseUser != null) {
+                userViewModel.loadUser(firebaseUser.getUid());
+            }
+
             invalidateOptionsMenu();
         });
     }

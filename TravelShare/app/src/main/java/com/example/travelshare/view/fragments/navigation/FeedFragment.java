@@ -44,6 +44,7 @@ public class FeedFragment extends Fragment {
 
         postAdapter = new PostAdapter(new PostAdapter.OnPostClickListener() {
             public void onPostClick(Post post) {
+                postViewModel.selectPost(post);
                 Bundle bundle = new Bundle();
                 bundle.putString("postId", post.getId());
                 Navigation.findNavController(view).navigate(R.id.action_global_to_postDetailFragment, bundle);

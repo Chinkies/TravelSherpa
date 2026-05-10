@@ -26,6 +26,7 @@ import com.example.travelshare.model.Post;
 import com.example.travelshare.utils.NavigationUtils;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.GroupViewModel;
+import com.example.travelshare.viewmodel.PostViewModel;
 import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -34,6 +35,7 @@ public class ProfileFragment extends Fragment {
     private UserViewModel userViewModel;
     private GroupViewModel groupViewModel;
     private AuthViewModel authViewModel;
+    private PostViewModel postViewModel;
 
     private PostAdapter postAdapter;
     private GroupAdapter groupAdapter;
@@ -55,6 +57,7 @@ public class ProfileFragment extends Fragment {
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         groupViewModel = new ViewModelProvider(requireActivity()).get(GroupViewModel.class);
+        postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
 
         FirebaseUser currentUser = authViewModel.getCurrentUser();
         String currentUserId = (currentUser != null) ? currentUser.getUid() : "";
@@ -107,6 +110,7 @@ public class ProfileFragment extends Fragment {
         postAdapter = new PostAdapter(new PostAdapter.OnPostClickListener() {
             @Override
             public void onPostClick(Post post) {
+                postViewModel.selectPost(post);
                 Bundle b = new Bundle();
                 b.putString("postId", post.getId());
                 Navigation.findNavController(view).navigate(R.id.action_global_to_postDetailFragment, b);

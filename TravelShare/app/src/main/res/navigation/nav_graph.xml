@@ -71,7 +71,7 @@
 
     <fragment
         android:id="@+id/postDetailFragment"
-        android:name="com.example.travelshare.view.fragments.detail.PhotoDetailFragment"
+        android:name="com.example.travelshare.view.fragments.detail.PostDetailFragment"
         android:label="Détail du Post"
         tools:layout="@layout/fragment_post_detail" />
 

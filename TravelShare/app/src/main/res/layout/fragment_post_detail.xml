@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".view.fragments.detail.PhotoDetailFragment">
+    tools:context=".view.fragments.detail.PostDetailFragment">
 
     <ScrollView
+        android:id="@+id/post_detail_scrollview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:layout_marginEnd="6dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        android:fillViewport="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/comment_input_layout">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,11 +23,10 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/layout_description"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="12dp">
+                android:layout_height="wrap_content">
 
                 <ImageView
-                    android:id="@+id/post_profil_picture"
+                    android:id="@+id/post_detail_profil_picture"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="Profil picture"
@@ -36,48 +36,48 @@
                     tools:srcCompat="@tools:sample/avatars" />
 
                 <TextView
-                    android:id="@+id/post_pseudo"
+                    android:id="@+id/post_detail_pseudo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:text="Pseudo utilisateur"
                     android:textStyle="bold"
-                    app:layout_constraintStart_toEndOf="@+id/post_profil_picture"
-                    app:layout_constraintTop_toTopOf="@+id/post_profil_picture" />
+                    app:layout_constraintStart_toEndOf="@+id/post_detail_profil_picture"
+                    app:layout_constraintTop_toTopOf="@+id/post_detail_profil_picture" />
 
                 <TextView
-                    android:id="@+id/post_date"
+                    android:id="@+id/post_detail_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Il y a 2 heures"
                     android:textColor="#757575"
                     android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="@+id/post_pseudo"
-                    app:layout_constraintTop_toBottomOf="@+id/post_pseudo" />
+                    app:layout_constraintStart_toStartOf="@+id/post_detail_pseudo"
+                    app:layout_constraintTop_toBottomOf="@+id/post_detail_pseudo" />
 
                 <ImageButton
-                    android:id="@+id/btn_more"
+                    android:id="@+id/post_detail_btn_more"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="bouton plus d'option"
                     android:padding="6dp"
                     android:scaleType="fitCenter"
-                    app:layout_constraintBottom_toBottomOf="@+id/post_profil_picture"
+                    app:layout_constraintBottom_toBottomOf="@+id/post_detail_profil_picture"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/post_profil_picture"
+                    app:layout_constraintTop_toTopOf="@+id/post_detail_profil_picture"
                     app:srcCompat="@drawable/baseline_more_horiz" />
 
                 <ImageView
-                    android:id="@+id/post_picture"
+                    android:id="@+id/post_detail_picture"
                     android:layout_width="0dp"
                     android:layout_height="250dp"
                     android:layout_marginStart="12dp"
                     android:layout_marginTop="12dp"
                     android:scaleType="centerCrop"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/post_profil_picture"
-                    app:layout_constraintTop_toBottomOf="@+id/post_profil_picture"
+                    app:layout_constraintStart_toEndOf="@+id/post_detail_profil_picture"
+                    app:layout_constraintTop_toBottomOf="@+id/post_detail_profil_picture"
                     tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
                 <TextView
@@ -86,9 +86,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="C'était un voyage magnifique au bord de la mer..."
-                    app:layout_constraintEnd_toEndOf="@+id/post_picture"
-                    app:layout_constraintStart_toStartOf="@+id/post_picture"
-                    app:layout_constraintTop_toBottomOf="@+id/post_picture" />
+                    app:layout_constraintEnd_toEndOf="@+id/post_detail_picture"
+                    app:layout_constraintStart_toStartOf="@+id/post_detail_picture"
+                    app:layout_constraintTop_toBottomOf="@+id/post_detail_picture" />
 
                 <LinearLayout
                     android:id="@+id/linearLayout"
@@ -98,11 +98,11 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     app:layout_constraintEnd_toEndOf="@+id/post_description"
-                    app:layout_constraintStart_toStartOf="@+id/post_picture"
+                    app:layout_constraintStart_toStartOf="@+id/post_detail_picture"
                     app:layout_constraintTop_toBottomOf="@+id/post_description">
 
                     <ImageButton
-                        android:id="@+id/post_btn_like"
+                        android:id="@+id/post_detail_btn_like"
                         android:layout_width="34dp"
                         android:layout_height="34dp"
                         android:layout_marginEnd="6dp"
@@ -112,7 +112,7 @@
                         app:srcCompat="@drawable/like_heart" />
 
                     <TextView
-                        android:id="@+id/post_likes"
+                        android:id="@+id/post_detail_likes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="12dp"
@@ -120,7 +120,7 @@
                         android:textStyle="bold" />
 
                     <ImageButton
-                        android:id="@+id/post_btn_comment"
+                        android:id="@+id/post_detail_btn_comment"
                         android:layout_width="34dp"
                         android:layout_height="34dp"
                         android:layout_marginEnd="6dp"
@@ -130,14 +130,14 @@
                         app:srcCompat="@drawable/comment" />
 
                     <TextView
-                        android:id="@+id/post_comment"
+                        android:id="@+id/post_detail_comment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="12 commentaires"
                         android:textStyle="bold" />
 
                     <ImageButton
-                        android:id="@+id/adresse"
+                        android:id="@+id/post_detail_btn_adresse"
                         android:layout_width="34dp"
                         android:layout_height="34dp"
                         android:layout_weight="1"
@@ -149,16 +149,16 @@
                 </LinearLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/photo_information"
+                    android:id="@+id/post_detail_information"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    app:layout_constraintEnd_toEndOf="@+id/post_picture"
-                    app:layout_constraintStart_toStartOf="@+id/post_picture"
+                    app:layout_constraintEnd_toEndOf="@+id/post_detail_picture"
+                    app:layout_constraintStart_toStartOf="@+id/post_detail_picture"
                     app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
                     <TextView
-                        android:id="@+id/date_label"
+                        android:id="@+id/post_detail_date_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Date :"
@@ -167,60 +167,60 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
-                        android:id="@+id/date_value"
+                        android:id="@+id/post_detail_date_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="06/06/2006"
-                        app:layout_constraintBaseline_toBaselineOf="@id/date_label"
-                        app:layout_constraintStart_toEndOf="@id/date_label" />
+                        app:layout_constraintBaseline_toBaselineOf="@id/post_detail_date_label"
+                        app:layout_constraintStart_toEndOf="@id/post_detail_date_label" />
 
                     <TextView
-                        android:id="@+id/location_label"
+                        android:id="@+id/post_detail_location_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Position :"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/date_label" />
+                        app:layout_constraintTop_toBottomOf="@id/post_detail_date_label" />
 
                     <TextView
-                        android:id="@+id/post_location_value"
+                        android:id="@+id/post_detail_location_value"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="48.8584° N, 2.2945° E"
-                        app:layout_constraintBaseline_toBaselineOf="@id/location_label"
+                        app:layout_constraintBaseline_toBaselineOf="@id/post_detail_location_label"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/location_label" />
+                        app:layout_constraintStart_toEndOf="@id/post_detail_location_label" />
 
                     <TextView
-                        android:id="@+id/indications_label"
+                        android:id="@+id/post_detail_indications_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Indication :"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/location_label" />
+                        app:layout_constraintTop_toBottomOf="@id/post_detail_location_label" />
 
                     <TextView
-                        android:id="@+id/indications_value"
+                        android:id="@+id/post_detail_indications_value"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Prendre la ligne 6, descendre à une destination au pif."
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/indications_label"
-                        app:layout_constraintTop_toTopOf="@id/indications_label" />
+                        app:layout_constraintStart_toEndOf="@id/post_detail_indications_label"
+                        app:layout_constraintTop_toTopOf="@id/post_detail_indications_label" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <View
-                android:id="@+id/separator"
+                android:id="@+id/post_detail_separator"
                 android:layout_width="wrap_content"
                 android:layout_height="3dp"
                 android:layout_marginTop="4dp"
@@ -230,23 +230,53 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/layout_description" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/post_detail_comment_section"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/comment_section"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:listitem="@layout/item_comment"
-                    tools:itemCount="5"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:itemCount="5"
+                tools:listitem="@layout/item_comment" />
         </LinearLayout>
     </ScrollView>
 
-</FrameLayout>
+    <LinearLayout
+        android:id="@+id/comment_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <EditText
+            android:id="@+id/post_detail_comment_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="Ajouter un commentaire..."
+            android:inputType="textMultiLine"
+            android:maxLines="3"
+            android:padding="12dp" />
+
+        <ImageButton
+            android:id="@+id/post_detail_btn_send"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Envoyer le commentaire"
+            android:src="@android:drawable/ic_menu_send"
+            app:tint="#FFA500" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
