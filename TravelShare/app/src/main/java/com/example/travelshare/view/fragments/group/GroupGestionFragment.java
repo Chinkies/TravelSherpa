@@ -96,6 +96,10 @@ public class GroupGestionFragment extends Fragment {
             saveChanges();
         });
 
+        view.findViewById(R.id.group_modify_button_add_member).setOnClickListener(v -> {
+            showAddMemberSheet();
+        });
+
         recyclerViewAdmin = view.findViewById(R.id.group_gestion_recycler_admin);
         recyclerViewAdmin.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -153,7 +157,7 @@ public class GroupGestionFragment extends Fragment {
 
     private void showDeleteGroupDialog() {
         new AlertDialog.Builder(requireContext())
-                .setTitle("Zone de danger")
+                .setTitle("Suppression du groupe")
                 .setMessage("Voulez-vous vraiment supprimer ce groupe définitivement ?")
                 .setPositiveButton("Supprimer", (d, w) -> {
                     groupViewModel.deleteCurrentGroup(new FireStoreCallBack<Void>() {
@@ -171,7 +175,7 @@ public class GroupGestionFragment extends Fragment {
         new AlertDialog.Builder(requireContext()).setTitle("Retirer l'admin")
                 .setMessage("Voulez-vous retirer les droits admin de " + user.getPseudo() + " ?")
                 .setPositiveButton("Rétrograder en membre", (dialog, which) -> {
-                    groupViewModel.addMember(user);
+                    groupViewModel.demoteToMember(user);
                 })
                 .setNegativeButton("Supprimer du groupe", (dialog, which) -> {
                     groupViewModel.removeMember(user);
@@ -226,7 +230,9 @@ public class GroupGestionFragment extends Fragment {
         searchInput.addTextChangedListener(new android.text.TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                groupViewModel.searchUsers(s.toString());
+                if (s.length() >= 3) {
+                    groupViewModel.searchUsers(s.toString());
+                }
             }
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(android.text.Editable s) {}

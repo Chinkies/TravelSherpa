@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -12,7 +13,7 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/label_research"
+            android:id="@+id/search_label_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="22dp"
@@ -26,19 +27,19 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/container_research"
+            android:id="@+id/search_container_search"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             app:boxStrokeColor="#757575"
             app:hintEnabled="false"
-            app:layout_constraintEnd_toEndOf="@+id/label_research"
-            app:layout_constraintStart_toStartOf="@+id/label_research"
-            app:layout_constraintTop_toBottomOf="@+id/label_research">
+            app:layout_constraintEnd_toEndOf="@+id/search_label_search"
+            app:layout_constraintStart_toStartOf="@+id/search_label_search"
+            app:layout_constraintTop_toBottomOf="@+id/search_label_search">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/text_research"
+                android:id="@+id/search_text_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Description, lieu, date etc..."
@@ -49,7 +50,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <ImageButton
-            android:id="@+id/btn_map"
+            android:id="@+id/search_btn_map"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginEnd="12dp"
@@ -57,12 +58,12 @@
             android:contentDescription="Bouton pour choisir les coordonnées sur une carte"
             android:scaleType="fitCenter"
             android:src="@drawable/adresse"
-            app:layout_constraintBottom_toBottomOf="@id/container_research"
-            app:layout_constraintEnd_toEndOf="@id/container_research"
-            app:layout_constraintTop_toTopOf="@id/container_research"/>
+            app:layout_constraintBottom_toBottomOf="@id/search_container_search"
+            app:layout_constraintEnd_toEndOf="@id/search_container_search"
+            app:layout_constraintTop_toTopOf="@id/search_container_search"/>
 
         <ImageButton
-            android:id="@+id/btn_mic"
+            android:id="@+id/search_btn_mic"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginEnd="4dp"
@@ -70,21 +71,33 @@
             android:contentDescription="Bouton pour saisir les informations de la recherche par le micro"
             android:src="@drawable/mic"
             android:scaleType="fitCenter"
-            app:layout_constraintBottom_toBottomOf="@+id/btn_map"
-            app:layout_constraintEnd_toStartOf="@+id/btn_map"
-            app:layout_constraintTop_toTopOf="@+id/btn_map"/>
+            app:layout_constraintBottom_toBottomOf="@+id/search_btn_map"
+            app:layout_constraintEnd_toStartOf="@+id/search_btn_map"
+            app:layout_constraintTop_toTopOf="@+id/search_btn_map"/>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/search_chip_group"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:singleSelection="true"
+            app:chipSpacingHorizontal="8dp"
+            app:layout_constraintEnd_toEndOf="@+id/search_container_search"
+            app:layout_constraintStart_toStartOf="@+id/search_container_search"
+            app:layout_constraintTop_toBottomOf="@+id/search_container_search" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="409dp"
-            android:layout_height="776dp"
+            android:id="@+id/search_recycler_result"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_marginTop="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/container_research"
-            tools:listitem="@layout/item_post"
+            android:nestedScrollingEnabled="false"
+            app:layout_constraintTop_toBottomOf="@+id/search_chip_group"
             tools:itemCount="5"
-            android:visibility="gone"/>
+            tools:listitem="@layout/item_post" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

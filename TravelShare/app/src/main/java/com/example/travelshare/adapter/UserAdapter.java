@@ -69,7 +69,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             if (holder.btnAddAdmin != null) holder.btnAddAdmin.setVisibility(View.VISIBLE);
         } else {
             if (holder.btnDelete != null) holder.btnDelete.setVisibility(View.VISIBLE);
-            if (holder.btnAddAdmin != null) holder.btnAddAdmin.setVisibility(View.GONE);
+            if (holder.btnAddAdmin != null) {
+                if (layoutId == R.layout.item_member) {
+                    holder.btnAddAdmin.setVisibility(View.VISIBLE);
+                } else {
+                    holder.btnAddAdmin.setVisibility(View.GONE);
+                }
+            }
         }
 
         if (holder.btnDelete != null) {

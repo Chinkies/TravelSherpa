@@ -1,6 +1,7 @@
 package com.example.travelshare.repository;
 
 import com.example.travelshare.model.Post;
+import com.example.travelshare.model.Tags;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,6 +31,10 @@ public class PostRepository {
                             );
                 }
             }
+
+            db.collection("users").document(post.getAuthorId())
+                    .update("nbPublications", FieldValue.increment(1));
+
             callback.onSuccess(post.getId());
         }).addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
@@ -51,6 +56,7 @@ public class PostRepository {
 
     public void fetchFeedPosts(FireStoreCallBack<List<Post>> callback) {
         db.collection(COLLECTION_POSTS)
+                .whereEqualTo("public", true)
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -78,19 +84,76 @@ public class PostRepository {
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
-    public void toggleLike(String postId, String userId, boolean isLiked, FireStoreCallBack<Void> callBack) {
-        DocumentReference postReference = db.collection(COLLECTION_POSTS).document(postId);
+    public void toggleLike(Post post, String userId, boolean isLiked, FireStoreCallBack<Void> callBack) {
+        DocumentReference postReference = db.collection(COLLECTION_POSTS).document(post.getId());
+        DocumentReference authorReference = db.collection("users").document(post.getAuthorId());
 
         if (isLiked) {
             postReference.update(
                     "likesCount", FieldValue.increment(1),
                     "likers", FieldValue.arrayUnion(userId)
-            ).addOnSuccessListener(v -> callBack.onSuccess(null));
+            ).addOnSuccessListener(v -> {
+                authorReference.update("nbLikes", FieldValue.increment(1));
+                callBack.onSuccess(null);
+            });
         } else {
             postReference.update(
                     "likesCount", FieldValue.increment(-1),
                     "likers", FieldValue.arrayRemove(userId)
-            ).addOnSuccessListener(v -> callBack.onSuccess(null));
+            ).addOnSuccessListener(v -> {
+                authorReference.update("nbLikes", FieldValue.increment(-1));
+                callBack.onSuccess(null);
+            });
         }
+    }
+
+    public void fetchGroupPosts(String groupId, FireStoreCallBack<List<Post>> callback) {
+        db.collection(COLLECTION_POSTS)
+                .whereArrayContains("groupIds", groupId)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Post> postList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        postList.add(doc.toObject(Post.class));
+                    }
+                    callback.onSuccess(postList);
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void fetchPostsByTag(String tag, FireStoreCallBack<List<Post>> callback) {
+        db.collection("posts")
+                .whereEqualTo("public", true)
+                .whereArrayContains("tags", tag)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Post> posts = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        posts.add(doc.toObject(Post.class));
+                    }
+                    callback.onSuccess(posts);
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void fetchOfficialTags(FireStoreCallBack<List<String>> callback) {
+        db.collection("tags").document("tags")
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Tags tags = documentSnapshot.toObject(Tags.class);
+
+                        if (tags != null) {
+                            callback.onSuccess(tags.getTags());
+                        } else {
+                            callback.onSuccess(new ArrayList<>());
+                        }
+                    } else {
+                        callback.onSuccess(new ArrayList<>());
+                    }
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 }

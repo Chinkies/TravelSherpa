@@ -22,7 +22,7 @@ public class SelectedGroupAdapter extends RecyclerView.Adapter<SelectedGroupAdap
     public void addGroup(Group group) {
         boolean exists = false;
         for(Group g : selectedGroups) {
-            if(g.getGroupId().equals(group.getGroupId())) exists = true;
+            if(g.getId().equals(group.getId())) exists = true;
         }
 
         if (!exists) {
@@ -51,7 +51,7 @@ public class SelectedGroupAdapter extends RecyclerView.Adapter<SelectedGroupAdap
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Group g = selectedGroups.get(position);
         holder.name.setText(g.getGroupName());
-        holder.icon.setImageResource(R.drawable.img_app);//PLACE HOLDER
+        holder.icon.setImageResource(R.drawable.img_app);
         holder.btnDelete.setOnClickListener(v -> removeGroup(g));
     }
 

@@ -25,6 +25,7 @@ public class UserViewModel extends ViewModel {
     private final GroupRepository groupRepository = new GroupRepository();
     private final StorageRepository storageRepository = new StorageRepository();
 
+    private final MutableLiveData<User> currentUser = new MutableLiveData<>();
     private final MutableLiveData<User> selectedUser = new MutableLiveData<>();
     private final MutableLiveData<List<User>> searchResults = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
@@ -32,13 +33,26 @@ public class UserViewModel extends ViewModel {
     private final MutableLiveData<List<Post>> userPostData = new MutableLiveData<>();
     private final MutableLiveData<List<Group>> userGroupData = new MutableLiveData<>();
 
-
+    public LiveData<User> getCurrentUser() { return currentUser; }
     public LiveData<User> getSelectedUser() { return selectedUser; }
     public LiveData<List<User>> getSearchResults() { return searchResults; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
     public LiveData<List<Post>> getUserPost() { return userPostData; }
     public LiveData<List<Group>> getUserGroup() { return userGroupData; }
+
+    public void loadCurrentUser(String userId) {
+        userRepository.getUser(userId, new FireStoreCallBack<User>() {
+            @Override
+            public void onSuccess(User user) {
+                currentUser.postValue(user);
+            }
+            @Override
+            public void onFailure(String e) {
+                errorMessage.postValue(e);
+            }
+        });
+    }
 
     public void loadUser(String userId) {
         isLoading.setValue(true);
@@ -91,6 +105,7 @@ public class UserViewModel extends ViewModel {
         userRepository.updateProfile(userId, pseudo, desc, new FireStoreCallBack<Void>() {
             @Override
             public void onSuccess(Void result) {
+                loadCurrentUser(userId);
                 loadUser(userId);
             }
             @Override
@@ -100,7 +115,6 @@ public class UserViewModel extends ViewModel {
             }
         });
     }
-
     public void updateProfileWithImage(String userId, String pseudo, String desc, Uri imageUri) {
         isLoading.setValue(true);
         storageRepository.uploadGroupImage(imageUri, userId, new FireStoreCallBack<String>() {
@@ -109,6 +123,7 @@ public class UserViewModel extends ViewModel {
                 userRepository.updateProfileFull(userId, pseudo, desc, imageUrl, new FireStoreCallBack<Void>() {
                     @Override
                     public void onSuccess(Void result) {
+                        loadCurrentUser(userId);
                         loadUser(userId);
                     }
                     @Override
@@ -118,6 +133,11 @@ public class UserViewModel extends ViewModel {
             @Override
             public void onFailure(String e) { errorMessage.postValue(e); isLoading.postValue(false); }
         });
+    }
+
+    public void clearUserData() {
+        currentUser.setValue(null);
+        selectedUser.setValue(null);
     }
 
     public void clearError() {

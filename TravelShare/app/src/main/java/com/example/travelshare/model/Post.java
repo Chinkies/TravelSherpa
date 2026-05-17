@@ -22,11 +22,12 @@ public class Post {
     private int commentCount;
     private boolean isPublic;
     private List<String> groupIds;
+    private List<String> tags;
 
     public Post() {}
 
     public Post(String authorId, String authorName, String description, GeoPoint location, String indication,
-                String imageUrl, String authorProfilPictureUrl, boolean isPublic, List<String> groupIds) {
+                String imageUrl, String authorProfilPictureUrl, boolean isPublic, List<String> groupIds, List<String> tags) {
         this.authorId = authorId;
         this.authorName = authorName;
         this.description = description;
@@ -40,6 +41,7 @@ public class Post {
         this.commentCount = 0;
         this.isPublic = isPublic;
         this.groupIds = groupIds != null ? groupIds : new ArrayList<>();
+        this.tags = tags;
     }
 
     public String getId() { return id; }
@@ -56,6 +58,7 @@ public class Post {
     public int getCommentCount() { return commentCount; }
     public boolean isPublic() { return isPublic; }
     public List<String> getGroupIds() { return groupIds; }
+    public List<String> getTags() { return tags; }
 
     public void setId(String id) { this.id = id; }
     public void setAuthorId(String authorId) { this.authorId = authorId; }
@@ -71,4 +74,5 @@ public class Post {
     public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
     public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
     public void setGroupIds(List<String> groupIds) { this.groupIds = groupIds; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 }

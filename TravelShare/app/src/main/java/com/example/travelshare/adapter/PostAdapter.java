@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.model.Post;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,13 +24,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         void onPostClick(Post post);
         void onProfileClick(String userId);
         void onMoreClick(View view, Post post);
+        void onLikeClick(Post post);
+        void onCommentClick(Post post);
     }
 
     private List<Post> postList = new ArrayList<>();
     private final OnPostClickListener listener;
+    private String currentUser;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.FRANCE);
 
-    public PostAdapter(OnPostClickListener listener){
+    public PostAdapter(String currentUser, OnPostClickListener listener){
+        this.currentUser = currentUser;
         this.listener = listener;
     }
 
@@ -52,14 +57,22 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         holder.Pseudo.setText(currentPost.getAuthorName());
         holder.Description.setText(currentPost.getDescription());
-        holder.LikesCount.setText(String.valueOf(currentPost.getLikesCount()));
-        holder.CommentCount.setText(String.valueOf(currentPost.getCommentCount()));
+
+        holder.countLikes.setText(currentPost.getLikesCount() + " like" + (currentPost.getLikesCount() > 1 ? "s" : ""));
+        holder.countComments.setText(currentPost.getCommentCount() + " commentaire" + (currentPost.getCommentCount() > 1 ? "s" : ""));
 
         if (currentPost.getDate() != null) {
             holder.Date.setText(dateFormat.format(currentPost.getDate()));
         }
 
         String postImg = currentPost.getImageUrl();
+
+        if (currentUser != null && currentPost.getLikers() != null && currentPost.getLikers().contains(currentUser)) {
+            holder.btnLikes.setColorFilter(android.graphics.Color.RED);
+        } else {
+            holder.btnLikes.clearColorFilter();;
+        }
+
         Glide.with(holder.itemView.getContext())
                 .load(postImg != null && !postImg.trim().isEmpty() ? postImg : null)
                 .placeholder(R.drawable.img_app)
@@ -82,6 +95,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.Pseudo.setOnClickListener(profileClick);
 
         holder.btnMore.setOnClickListener(v -> listener.onMoreClick(v, currentPost));
+
+        holder.btnLikes.setOnClickListener(v -> listener.onLikeClick(currentPost));
+        holder.btnComment.setOnClickListener(v -> listener.onCommentClick(currentPost));
     }
 
     @Override
@@ -89,9 +105,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         return postList.size();
     }
 
+    public void updateUserId(String userId) {
+        this.currentUser = userId;
+        notifyDataSetChanged();
+    }
+
     static class PostViewHolder extends RecyclerView.ViewHolder {
-        TextView Pseudo, Date, Description, LikesCount, CommentCount;
-        ImageView PostImage, ProfilPicture, btnMore;
+        TextView Pseudo, Date, Description, countLikes, countComments;
+        ImageView PostImage, ProfilPicture, btnMore, btnLikes, btnComment;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -100,8 +121,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             Date = itemView.findViewById(R.id.post_date);
             PostImage = itemView.findViewById(R.id.post_picture);
             Description = itemView.findViewById(R.id.post_description);
-            LikesCount = itemView.findViewById(R.id.post_likes);
-            CommentCount = itemView.findViewById(R.id.post_comment);
+            btnLikes = itemView.findViewById(R.id.post_btn_like);
+            btnComment = itemView.findViewById(R.id.post_btn_comment);
+            countLikes = itemView.findViewById(R.id.post_likes);
+            countComments = itemView.findViewById(R.id.post_comment);
             btnMore = itemView.findViewById(R.id.btn_more);
         }
     }

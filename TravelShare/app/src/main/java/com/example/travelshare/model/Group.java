@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Group {
-    private String groupId;
+    private String id;
     private String groupName;
     private String description;
     private String imageUrl;
@@ -27,7 +27,7 @@ public class Group {
         this.lastActivityDate = new Date();
     }
 
-    public String getGroupId() { return groupId; }
+    public String getId() { return id; }
     public String getGroupName() { return groupName; }
     public String getDescription() { return description; }
     public String getImageUrl() { return imageUrl; }
@@ -38,6 +38,6 @@ public class Group {
     public void setGroupName(String name) { this.groupName = name; }
     public void setDescription(String description) { this.description = description; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-    public void setGroupId(String groupId) { this.groupId = groupId; }
+    public void setId(String id) { this.id = id; }
     public void setLastActivityDate(Date lastActivityDate) { this.lastActivityDate = lastActivityDate; }
 }

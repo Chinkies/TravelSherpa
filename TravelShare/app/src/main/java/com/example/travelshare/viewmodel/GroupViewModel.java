@@ -41,10 +41,10 @@ public class GroupViewModel extends ViewModel {
     public void createNewGroup(String name, String description, String userId, Uri imageUri) {
         Group newGroup = new Group(name, description, userId);
 
-        groupRepository.createGroup(newGroup, new FireStoreCallBack<String>() {
+        groupRepository.createGroup(newGroup, userId, new FireStoreCallBack<String>() {
             @Override
             public void onSuccess(String groupId) {
-                newGroup.setGroupId(groupId);
+                newGroup.setId(groupId);
 
                 if (imageUri != null) {
                     storageRepository.uploadGroupImage(imageUri, groupId, new FireStoreCallBack<String>() {
@@ -149,7 +149,7 @@ public class GroupViewModel extends ViewModel {
             g.setDescription(newDescription);
 
             if (imageUri != null){
-                storageRepository.uploadGroupImage(imageUri, g.getGroupId(), new FireStoreCallBack<String>() {
+                storageRepository.uploadGroupImage(imageUri, g.getId(), new FireStoreCallBack<String>() {
                     @Override
                     public void onSuccess(String firebaseUrl) {
                         g.setImageUrl(firebaseUrl);
@@ -195,19 +195,45 @@ public class GroupViewModel extends ViewModel {
         }
     }
 
+    public void demoteToMember(User user) {
+        Group g = selectedGroup.getValue();
+        if (g != null) {
+            g.getMembers().put(user.getId(), false);
+            updateGroupMembersInDb(g);
+        }
+    }
+
     public void removeMember(User user) {
         Group g = selectedGroup.getValue();
         if (g != null) {
-            g.getMembers().remove(user.getId());
-            updateGroupMembersInDb(g);
+            groupRepository.leaveGroup(g.getId(), user.getId(), new FireStoreCallBack<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    g.getMembers().remove(user.getId());
+                    selectedGroup.postValue(g);
+                    fetchMembersDetails();
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {}
+            });
         }
     }
 
     public void addMember(User user) {
         Group g = selectedGroup.getValue();
         if (g != null) {
-            g.getMembers().put(user.getId(), false);
-            updateGroupMembersInDb(g);
+            groupRepository.joinGroup(g.getId(), user.getId(), new FireStoreCallBack<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    g.getMembers().put(user.getId(), false);
+                    selectedGroup.postValue(g);
+                    fetchMembersDetails();
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {}
+            });
         }
     }
 
@@ -226,7 +252,7 @@ public class GroupViewModel extends ViewModel {
 
     public void deleteCurrentGroup(FireStoreCallBack<Void> callBack){
         if (selectedGroup.getValue() != null) {
-            groupRepository.deleteGroup(selectedGroup.getValue().getGroupId(), callBack);
+            groupRepository.deleteGroup(selectedGroup.getValue().getId(), callBack);
         }
     }
 }

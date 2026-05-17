@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,6 +76,10 @@ public class PostDetailFragment extends Fragment {
         commentViewModel.getComment().observe(getViewLifecycleOwner(), allComments -> {
             commentAdapter.setComments(allComments);
             comments.setText(allComments.size() + " commentaires");
+
+            if (userViewModel.getSelectedUser().getValue() != null) {
+                postViewModel.updatePostCommentCount(currentPost.getId(), allComments.size());
+            }
         });
 
         btnSend.setOnClickListener(v -> sendComment());
@@ -114,7 +119,6 @@ public class PostDetailFragment extends Fragment {
             User currentUser = userViewModel.getSelectedUser().getValue();
             if (currentUser != null) {
                 postViewModel.toggleLike(currentPost, currentUser.getId());
-
             }
         });
 
@@ -145,7 +149,6 @@ public class PostDetailFragment extends Fragment {
         } else {
             location.setText("Non spécifiée");
         }
-
         indications.setText(currentPost.getIndication() != null && !currentPost.getIndication().isEmpty() ?
                 currentPost.getIndication() : "Aucune indication");
 
@@ -171,6 +174,7 @@ public class PostDetailFragment extends Fragment {
 
         recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerComments.setAdapter(commentAdapter);
+
     }
 
     private void sendComment() {
@@ -183,7 +187,7 @@ public class PostDetailFragment extends Fragment {
 
         if (currentUser == null) {
             Toast.makeText(getContext(), "Erreur : Utilisateur non identifié. Réessayez dans un instant.", Toast.LENGTH_SHORT).show();
-            // Optionnel : on peut tenter de recharger l'utilisateur ici si besoin
+            // Diriger vers la connection ????
             return;
         }
 

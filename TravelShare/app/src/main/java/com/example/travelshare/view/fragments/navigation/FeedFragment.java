@@ -21,10 +21,13 @@ import com.example.travelshare.R;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
 import com.example.travelshare.viewmodel.PostViewModel;
+import com.example.travelshare.viewmodel.UserViewModel;
 
 public class FeedFragment extends Fragment {
 
     private PostViewModel postViewModel;
+    private UserViewModel userViewModel;
+
     private RecyclerView recyclerView;
     private PostAdapter postAdapter;
 
@@ -38,11 +41,12 @@ public class FeedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         recyclerView = view.findViewById(R.id.feed_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        postAdapter = new PostAdapter(new PostAdapter.OnPostClickListener() {
+        postAdapter = new PostAdapter(null ,new PostAdapter.OnPostClickListener() {
             public void onPostClick(Post post) {
                 postViewModel.selectPost(post);
                 Bundle bundle = new Bundle();
@@ -61,11 +65,31 @@ public class FeedFragment extends Fragment {
             public void onMoreClick(View v, Post post) {
                 showPostMenu(requireContext(), view, post);
             }
+
+            @Override
+            public void onLikeClick(Post post) {
+                String userId = userViewModel.getSelectedUser().getValue().getId();
+                if (userId != null) {
+                    postViewModel.toggleLike(post, userId);
+                }
+            }
+
+            @Override
+            public void onCommentClick(Post post) {
+                onPostClick(post);
+            }
         });
+
         recyclerView.setAdapter(postAdapter);
 
         ProgressBar progressBar = view.findViewById(R.id.feed_progress_bar);
         postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
+
+        userViewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                postAdapter.updateUserId(user.getId());
+            }
+        });
 
         postViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
             postAdapter.setPosts(posts);

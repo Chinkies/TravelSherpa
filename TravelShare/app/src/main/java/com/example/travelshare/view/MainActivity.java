@@ -23,6 +23,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
+import com.example.travelshare.model.User;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private AuthViewModel authViewModel;
     private UserViewModel userViewModel;
     private boolean isUserLogged = false;
+
+    private User currentUserProfile = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
-
         NavigationUI.setupWithNavController(bottomNav, navController);
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -71,12 +73,28 @@ public class MainActivity extends AppCompatActivity {
         });
 
         authViewModel.getUser().observe(this, firebaseUser -> {
-            isUserLogged = (firebaseUser != null);
             if (firebaseUser != null) {
-                userViewModel.loadUser(firebaseUser.getUid());
+                userViewModel.loadCurrentUser(firebaseUser.getUid());
+            } else {
+                isUserLogged = false;
+                userViewModel.clearUserData();
+                invalidateOptionsMenu();
             }
+        });
 
-            invalidateOptionsMenu();
+        userViewModel.getCurrentUser().observe(this, user -> {
+            if (user != null) {
+                isUserLogged = true;
+                currentUserProfile = user;
+                invalidateOptionsMenu();
+            }
+        });
+
+        userViewModel.getErrorMessage().observe(this, error -> {
+            if (error != null && authViewModel.getCurrentUser() != null) {
+                authViewModel.logout();
+                userViewModel.clearError();
+            }
         });
     }
 
@@ -85,25 +103,24 @@ public class MainActivity extends AppCompatActivity {
         MenuItem loginItem = menu.findItem(R.id.header_login);
         MenuItem profileItem = menu.findItem(R.id.header_profile);
 
-        if (isUserLogged) {
+        if (isUserLogged && currentUserProfile != null) {
             loginItem.setVisible(false);
             profileItem.setVisible(true);
 
             View actionView = profileItem.getActionView();
-            ImageView profileImage = actionView.findViewById(R.id.toolbar_profile_image);
+            if (actionView != null) {
+                ImageView profileImage = actionView.findViewById(R.id.toolbar_profile_image);
 
-            userViewModel.getSelectedUser().observe(this, user -> {
-                if (user != null && profileImage != null) {
+                if (profileImage != null) {
                     Glide.with(this)
-                            .load(user.getProfilePictureUrl())
+                            .load(currentUserProfile.getProfilePictureUrl())
                             .placeholder(R.drawable.default_user)
                             .error(R.drawable.default_user)
                             .circleCrop()
                             .into(profileImage);
                 }
-            });
-            actionView.setOnClickListener(v -> onOptionsItemSelected(profileItem));
-
+                actionView.setOnClickListener(v -> onOptionsItemSelected(profileItem));
+            }
         } else {
             loginItem.setVisible(true);
             profileItem.setVisible(false);

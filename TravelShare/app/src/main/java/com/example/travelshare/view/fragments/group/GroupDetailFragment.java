@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,10 +24,18 @@ import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.GroupViewModel;
+import com.example.travelshare.viewmodel.PostViewModel;
+import com.example.travelshare.viewmodel.UserViewModel;
+
+import java.util.Map;
 
 public class GroupDetailFragment extends Fragment {
 
     private GroupViewModel groupViewModel;
+    private PostViewModel postViewModel;
+    private UserViewModel userViewModel;
+    private AuthViewModel authViewModel;
+
     private RecyclerView recyclerView;
     private PostAdapter postAdapter;
 
@@ -39,32 +48,26 @@ public class GroupDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        AuthViewModel authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        groupViewModel = new ViewModelProvider(requireActivity()).get(GroupViewModel.class);
 
         if (authViewModel.getCurrentUser() == null) {
-            android.widget.Toast.makeText(getContext(), "Connectez-vous pour accéder à cette page", android.widget.Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Connectez-vous pour accéder à cette page", android.widget.Toast.LENGTH_SHORT).show();
             Navigation.findNavController(view).popBackStack();
             return;
         }
 
         TextView title = view.findViewById(R.id.group_detail_name);
 
-        groupViewModel = new ViewModelProvider(requireActivity()).get(GroupViewModel.class);
-
-        groupViewModel.getSelectedGroup().observe(getViewLifecycleOwner(), group -> {
-            if (group != null) {
-                title.setText(group.getGroupName());
-
-                // FAUT RECUP LES POSTS DES GROUPES !!!!
-            }
-        });
-
         recyclerView = view.findViewById(R.id.group_detail_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        postAdapter = new PostAdapter(new PostAdapter.OnPostClickListener() {
+        postAdapter = new PostAdapter(null, new PostAdapter.OnPostClickListener() {
             @Override
             public void onPostClick(Post post) {
+                postViewModel.selectPost(post);
                 Bundle bundle = new Bundle();
                 bundle.putString("postId", post.getId());
                 Navigation.findNavController(view).navigate(R.id.action_global_to_postDetailFragment, bundle);
@@ -81,8 +84,48 @@ public class GroupDetailFragment extends Fragment {
             public void onMoreClick(View v, Post post) {
                 showPostMenu(requireContext(), v, post);
             }
+
+            @Override
+            public void onLikeClick(Post post) {
+                if (userViewModel.getSelectedUser().getValue() != null) {
+                    String userId = userViewModel.getSelectedUser().getValue().getId();
+                    postViewModel.toggleLike(post, userId);
+                }
+            }
+
+            @Override
+            public void onCommentClick(Post post) {
+                onPostClick(post);
+            }
         });
         recyclerView.setAdapter(postAdapter);
+
+        userViewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                postAdapter.updateUserId(user.getId());
+            }
+        });
+
+        groupViewModel.getSelectedGroup().observe(getViewLifecycleOwner(), group -> {
+            if (group != null) {
+                title.setText(group.getGroupName());
+                postViewModel.loadGroupPosts(group.getId());
+
+                String currentUserId = authViewModel.getCurrentUser().getUid();
+                View btnManage = view.findViewById(R.id.group_detail_manage);
+
+                Map<String, Boolean> members = group.getMembers();
+                if (members.containsKey(currentUserId) && members.get(currentUserId)) {
+                    btnManage.setVisibility(View.VISIBLE);
+                } else {
+                    btnManage.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        postViewModel.getGroupPost().observe(getViewLifecycleOwner(), posts -> {
+            postAdapter.setPosts(posts);
+        });
 
         view.findViewById(R.id.group_detail_manage).setOnClickListener(v -> {
             Navigation.findNavController(view).navigate(R.id.action_groupDetailFragment_to_groupGestionFragment);

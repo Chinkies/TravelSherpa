@@ -32,6 +32,13 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class ProfileFragment extends Fragment {
 
+    private ImageView profilPicture;
+    private TextView profilPseudo, profilDesc, countPubs,
+        countGroups, countLikes;
+    private Button btnAction;
+    private RadioGroup radioGroup;
+    private RecyclerView recyclerPublications, recyclerGroups;
+
     private UserViewModel userViewModel;
     private GroupViewModel groupViewModel;
     private AuthViewModel authViewModel;
@@ -63,19 +70,28 @@ public class ProfileFragment extends Fragment {
         String currentUserId = (currentUser != null) ? currentUser.getUid() : "";
 
         String visitedUserId = (getArguments() != null) ? getArguments().getString("userId") : currentUserId;
-        boolean isMyProfile = visitedUserId.equals(currentUserId);
+        boolean isMyProfile = !currentUserId.isEmpty() && visitedUserId.equals(currentUserId);
 
-        ImageView profilPicture = view.findViewById(R.id.profil_picture);
-        TextView profilPseudo = view.findViewById(R.id.profil_pseudo);
-        TextView profilDesc = view.findViewById(R.id.profil_description);
-        TextView countPubs = view.findViewById(R.id.profile_count_publications);
-        TextView countGroups = view.findViewById(R.id.profile_count_groups);
-        TextView countLikes = view.findViewById(R.id.profile_count_likes);
-        Button btnAction = view.findViewById(R.id.button_modification);
-        RadioGroup radioGroup = view.findViewById(R.id.radio_group);
-        RecyclerView recyclerPublications = view.findViewById(R.id.recycler_publications);
-        RecyclerView recyclerGroups = view.findViewById(R.id.recycler_groups);
+        profilPicture = view.findViewById(R.id.profil_picture);
+        profilPseudo = view.findViewById(R.id.profil_pseudo);
+        profilDesc = view.findViewById(R.id.profil_description);
+        countPubs = view.findViewById(R.id.profile_count_publications);
+        countGroups = view.findViewById(R.id.profile_count_groups);
+        countLikes = view.findViewById(R.id.profile_count_likes);
+        btnAction = view.findViewById(R.id.button_modification);
+        radioGroup = view.findViewById(R.id.radio_group);
+        recyclerPublications = view.findViewById(R.id.recycler_publications);
+        recyclerGroups = view.findViewById(R.id.recycler_groups);
 
+        if (currentUserId.isEmpty()) {
+            radioGroup.setVisibility(View.GONE);
+            recyclerPublications.setVisibility(View.VISIBLE);
+            recyclerGroups.setVisibility(View.GONE);
+
+            view.findViewById(R.id.profile_count_groups).setVisibility(View.GONE);
+        } else {
+            radioGroup.setVisibility(View.VISIBLE);
+        }
 
         if (isMyProfile) {
             btnAction.setText("Modifier le profil");
@@ -98,16 +114,35 @@ public class ProfileFragment extends Fragment {
             Navigation.findNavController(view).navigate(R.id.feedFragment);
         });
 
-        setupRecyclerViews(recyclerPublications, recyclerGroups, view);
-
+        setupRecyclerViews(recyclerPublications, recyclerGroups, view, currentUserId);
         setupObservers(profilPseudo, profilDesc, profilPicture, countPubs, countGroups, countLikes);
 
-        userViewModel.loadUser(visitedUserId);
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radio_display_publications) {
+                recyclerPublications.setVisibility(View.VISIBLE);
+                recyclerGroups.setVisibility(View.GONE);
+            } else if (checkedId == R.id.radio_display_groups) {
+                recyclerPublications.setVisibility(View.GONE);
+                recyclerGroups.setVisibility(View.VISIBLE);
+            }
+        });
+
+        if (!visitedUserId.isEmpty()) {
+            userViewModel.loadUser(visitedUserId);
+            postViewModel.loadUserPosts(visitedUserId);
+        } else {
+            profilPseudo.setText("Mode Invité");
+            profilDesc.setText("Connectez-vous pour accéder à votre profil.");
+            radioGroup.setVisibility(View.GONE);
+            btnAction.setVisibility(View.GONE);
+            view.findViewById(R.id.profile_btn_logout).setVisibility(View.GONE);
+        }
     }
 
-    private void setupRecyclerViews(RecyclerView recyclerPubs, RecyclerView recyclerGrps, View view) {
+    private void setupRecyclerViews(RecyclerView recyclerPubs, RecyclerView recyclerGrps, View view, String currentUserId) {
         recyclerPubs.setLayoutManager(new LinearLayoutManager(getContext()));
-        postAdapter = new PostAdapter(new PostAdapter.OnPostClickListener() {
+
+        postAdapter = new PostAdapter(currentUserId.isEmpty() ? null : currentUserId, new PostAdapter.OnPostClickListener() {
             @Override
             public void onPostClick(Post post) {
                 postViewModel.selectPost(post);
@@ -118,6 +153,16 @@ public class ProfileFragment extends Fragment {
             @Override public void onProfileClick(String id) { }
             @Override public void onMoreClick(View v, Post post) {
                 NavigationUtils.showPostMenu(requireContext(), v, post);
+            }
+            @Override public void onLikeClick(Post post) {
+                if (currentUserId.isEmpty()) {
+                    Toast.makeText(getContext(), "Veuillez vous connecter pour liker un post", Toast.LENGTH_SHORT).show();
+                } else {
+                    postViewModel.toggleLike(post, currentUserId);
+                }
+            }
+            @Override public void onCommentClick(Post post) {
+                onPostClick(post);
             }
         });
         recyclerPubs.setAdapter(postAdapter);
@@ -135,9 +180,10 @@ public class ProfileFragment extends Fragment {
             if (user != null) {
                 pseudo.setText(user.getPseudo());
                 desc.setText(user.getDescription());
-                pubs.setText(String.valueOf(user.getNbPublications()));
-                grps.setText(String.valueOf(user.getNbGroups()));
-                likes.setText(String.valueOf(user.getNbLikes()));
+
+                countPubs.setText(String.valueOf(user.getNbPublications()));
+                countLikes.setText(String.valueOf(user.getNbLikes()));
+                countGroups.setText(String.valueOf(user.getNbGroups()));
 
                 String url = user.getProfilePictureUrl();
                 Glide.with(this)
@@ -149,10 +195,47 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        userViewModel.getUserPost().observe(getViewLifecycleOwner(), posts -> postAdapter.setPosts(posts));
-        userViewModel.getUserGroup().observe(getViewLifecycleOwner(), groups -> groupAdapter.setGroups(groups));
+        postViewModel.getUserPosts().observe(getViewLifecycleOwner(), posts -> {
+            if (posts != null) {
+                FirebaseUser currentUser = authViewModel.getCurrentUser();
+                String currentUserId = (currentUser != null) ? currentUser.getUid() : "";
+                String visitedUserId = (getArguments() != null) ? getArguments().getString("userId") : currentUserId;
+                boolean isMyProfile = !currentUserId.isEmpty() && visitedUserId.equals(currentUserId);
+
+                java.util.List<Post> displayedPosts = new java.util.ArrayList<>();
+                int totalLikes = 0;
+
+                for (Post post : posts) {
+                    if (isMyProfile || post.isPublic()) {
+                        displayedPosts.add(post);
+                        totalLikes += post.getLikesCount();
+                    }
+                }
+
+                postAdapter.setPosts(displayedPosts);
+
+                pubs.setText(String.valueOf(displayedPosts.size()));
+                likes.setText(String.valueOf(totalLikes));
+
+            } else {
+                pubs.setText("0");
+                likes.setText("0");
+            }
+        });
+        userViewModel.getUserGroup().observe(getViewLifecycleOwner(), groups -> {
+            if (groups != null) {
+                groupAdapter.setGroups(groups);
+                grps.setText(String.valueOf(groups.size()));
+            } else {
+                grps.setText("0");
+            }
+        });
 
         userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+        });
+
+        postViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null) Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
         });
     }
