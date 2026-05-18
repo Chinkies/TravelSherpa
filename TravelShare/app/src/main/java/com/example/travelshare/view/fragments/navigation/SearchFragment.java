@@ -2,13 +2,16 @@ package com.example.travelshare.view.fragments.navigation;
 
 import static com.example.travelshare.utils.NavigationUtils.showPostMenu;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -17,6 +20,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
@@ -69,6 +74,19 @@ public class SearchFragment extends Fragment {
     private Runnable searchRunnable;
     private String lastSearchQuery = "";
 
+    private ActivityResultLauncher<Intent> voiceLauncherSearch = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    ArrayList<String> matches = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    if (matches != null && !matches.isEmpty()) {
+                        searchInput.setText(matches.get(0));
+                        applyFilters();
+                    }
+                }
+            }
+    );
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_search, container, false);
@@ -102,7 +120,19 @@ public class SearchFragment extends Fragment {
         searchMapView = view.findViewById(R.id.search_map_view);
 
         btnMap.setOnClickListener(v -> toggleMapView());
-        btnMic.setOnClickListener(v -> Toast.makeText(getContext(), "Recherche vocale bientôt disponible", Toast.LENGTH_SHORT).show());
+        btnMic.setOnClickListener(v -> startVoiceRecognition());
+    }
+
+    private void startVoiceRecognition() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Rechercher par la voix...");
+        try {
+            voiceLauncherSearch.launch(intent);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "La reconnaissance vocale n'est pas disponible", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupRecyclerView(View view) {
@@ -294,7 +324,6 @@ public class SearchFragment extends Fragment {
                         searchMapView.getController().animateTo(pointsToZoom.get(0));
                     } else {
                         BoundingBox box = BoundingBox.fromGeoPoints(pointsToZoom);
-                        // Sécurité : si la zone est trop petite (points quasi identiques), on utilise un zoom fixe
                         if (box.getLatitudeSpan() < 0.01 && box.getLongitudeSpan() < 0.01) {
                             searchMapView.getController().setZoom(11.0);
                             searchMapView.getController().animateTo(new GeoPoint(box.getCenterLatitude(), box.getCenterLongitude()));

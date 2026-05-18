@@ -1,6 +1,8 @@
 package com.example.travelshare.view.fragments.navigation;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -14,12 +16,14 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -39,9 +43,6 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.GeoPoint;
-
-//import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,6 +64,7 @@ public class PublishFragment extends Fragment {
     private UserViewModel userViewModel;
 
     private MaterialButton btnPublish, btnAddGroup;
+    private ImageButton btnMicDescription, btnMicIndication;
 
     private ActivityResultLauncher<String> pickImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
@@ -71,6 +73,30 @@ public class PublishFragment extends Fragment {
                     selectecImageUri = uri;
                     imgPicture.setImageURI(uri);
                     imgPicture.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                }
+            }
+    );
+
+    private ActivityResultLauncher<Intent> voiceLauncherDescription = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    ArrayList<String> matches = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    if (matches != null && !matches.isEmpty()) {
+                        inputDescription.setText(matches.get(0));
+                    }
+                }
+            }
+    );
+
+    private ActivityResultLauncher<Intent> voiceLauncherIndication = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    ArrayList<String> matches = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    if (matches != null && !matches.isEmpty()) {
+                        inputIndication.setText(matches.get(0));
+                    }
                 }
             }
     );
@@ -101,7 +127,6 @@ public class PublishFragment extends Fragment {
         }
 
         postViewModel.resetPostCreated();
-
         groupViewModel.fetchGroups();
 
         imgPicture = view.findViewById(R.id.publish_btn_photo);
@@ -114,6 +139,8 @@ public class PublishFragment extends Fragment {
         btnPublish = view.findViewById(R.id.publish_button_publish);
         btnAddGroup = view.findViewById(R.id.publish_group_add);
         chipGroup = view.findViewById(R.id.publish_chip_group);
+        btnMicDescription = view.findViewById(R.id.publish_btn_mic_description);
+        btnMicIndication = view.findViewById(R.id.publish_btn_mic_indication);
 
         view.findViewById(R.id.publish_card_btn_photo).setOnClickListener(
                 v -> pickImage.launch("image/*")
@@ -127,6 +154,9 @@ public class PublishFragment extends Fragment {
                     Toast.makeText(getContext(), "Ouverture de la carte :", Toast.LENGTH_SHORT).show();
                 }
         );
+
+        btnMicDescription.setOnClickListener(v -> startVoiceRecognition(voiceLauncherDescription));
+        btnMicIndication.setOnClickListener(v -> startVoiceRecognition(voiceLauncherIndication));
 
         setupGroupsRecyclerView();
 
@@ -143,7 +173,6 @@ public class PublishFragment extends Fragment {
         });
 
         btnAddGroup.setOnClickListener(v -> showAddGroupSheet());
-
         btnPublish.setOnClickListener(v -> publishPost());
 
         postViewModel.loadOfficialTags();
@@ -151,14 +180,11 @@ public class PublishFragment extends Fragment {
         postViewModel.getOfficialTags().observe(getViewLifecycleOwner(), tags -> {
             if (tags != null) {
                 chipGroup.removeAllViews();
-
                 for (String tag : tags) {
                     Chip chip = new Chip(getContext());
                     chip.setText(tag);
-
                     chip.setCheckable(true);
                     chip.setClickable(true);
-
                     chipGroup.addView(chip);
                 }
             }
@@ -174,6 +200,18 @@ public class PublishFragment extends Fragment {
                 inputLocalisation.setError(error);
             }
         });
+    }
+
+    private void startVoiceRecognition(ActivityResultLauncher<Intent> launcher) {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Parlez maintenant...");
+        try {
+            launcher.launch(intent);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "La reconnaissance vocale n'est pas disponible sur cet appareil", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showDatePicker(){
@@ -228,7 +266,6 @@ public class PublishFragment extends Fragment {
 
     private void showAddGroupSheet() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
-
         View sheetView = getLayoutInflater().inflate(R.layout.item_add_member, null);
         bottomSheetDialog.setContentView(sheetView);
 
@@ -248,9 +285,7 @@ public class PublishFragment extends Fragment {
         });
 
         searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(Editable s) {}
         });
