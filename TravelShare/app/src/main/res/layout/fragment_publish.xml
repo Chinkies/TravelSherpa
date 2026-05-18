@@ -176,24 +176,11 @@
                 android:id="@+id/publish_localisation_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Ex: 48.8584, 2.2945"
+                android:hint="Adresse ou coordonnées"
                 android:textColor="#333333"
                 android:textColorHint="#999999"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <ImageButton
-            android:id="@+id/publish_btn_map"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Bouton pour choisir les coordonnées sur une carte"
-            android:src="@drawable/adresse"
-            app:layout_constraintBottom_toBottomOf="@id/publish_localisation"
-            app:layout_constraintEnd_toEndOf="@id/publish_localisation"
-            app:layout_constraintTop_toTopOf="@id/publish_localisation"
-            app:tint="#757575" />
 
         <TextView
             android:id="@+id/publish_label_indication"

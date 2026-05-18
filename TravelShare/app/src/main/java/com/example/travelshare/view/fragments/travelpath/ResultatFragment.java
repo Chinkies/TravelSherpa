@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ import org.osmdroid.views.overlay.Marker;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class ResultatFragment extends Fragment {
@@ -83,6 +85,8 @@ public class ResultatFragment extends Fragment {
         if (parcours != null) {
             setupUI(view);
             displayParcoursOnMap();
+        } else {
+            Toast.makeText(getContext(), "Erreur : Impossible de charger le parcours", Toast.LENGTH_SHORT).show();
         }
 
         observeViewModel();
@@ -102,22 +106,27 @@ public class ResultatFragment extends Fragment {
         ImageView btnPartager = view.findViewById(R.id.btnPartager);
         ImageView btnExportPdf = view.findViewById(R.id.btnExportPdf);
 
-        tvTitre.setText(parcours.getNomOption());
+        tvTitre.setText(parcours.getNomOption() != null ? parcours.getNomOption() : "Sans titre");
         tvBudget.setText(String.format(Locale.FRANCE, "Budget: %.2f €", parcours.getBudgetTotal()));
         tvDuree.setText(String.format(Locale.FRANCE, "Durée: %d min", parcours.getDureeTotale()));
         tvEffort.setText(String.format(Locale.FRANCE, "Effort: %s", parcours.getNiveauDifficulte()));
-        tvLieux.setText(String.format(Locale.FRANCE, "Lieux: %d", parcours.getListeEtapes().size()));
+        
+        int nbEtapes = (parcours.getListeEtapes() != null) ? parcours.getListeEtapes().size() : 0;
+        tvLieux.setText(String.format(Locale.FRANCE, "Lieux: %d", nbEtapes));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        etapeAdapter = new EtapeAdapter(parcours.getListeEtapes(), etape -> {
-            GeoPoint gp = new GeoPoint(etape.getLieu().getLatitude(), etape.getLieu().getLongitude());
-            map.getController().animateTo(gp);
-            map.getController().setZoom(17.0);
+        etapeAdapter = new EtapeAdapter(parcours.getListeEtapes() != null ? parcours.getListeEtapes() : new ArrayList<>(), etape -> {
+            if (etape.getLieu() != null) {
+                GeoPoint gp = new GeoPoint(etape.getLieu().getLatitude(), etape.getLieu().getLongitude());
+                map.getController().animateTo(gp);
+                map.getController().setZoom(17.0);
+            }
         });
         recyclerView.setAdapter(etapeAdapter);
 
         FirebaseUser currentUser = authViewModel.getCurrentUser();
-        if (currentUser == null) {
+        // Masquer le bouton si pas connecté OU si le parcours est déjà sauvegardé (createur_id non null)
+        if (currentUser == null || parcours.getCreateur_id() != null) {
             btnSauvegarder.setVisibility(View.GONE);
         } else {
             btnSauvegarder.setVisibility(View.VISIBLE);
@@ -127,19 +136,23 @@ public class ResultatFragment extends Fragment {
         }
 
         btnExportPdf.setOnClickListener(v -> exporterEnPDF());
-
         btnPartager.setOnClickListener(v -> partagerParcours());
     }
 
     private void partagerParcours() {
+        if (parcours == null) return;
         StringBuilder textePartage = new StringBuilder();
         textePartage.append(" Découvrez mon parcours TravelShare : ").append(parcours.getNomOption()).append("\n\n");
         textePartage.append(" Budget : ").append(String.format(Locale.FRANCE, "%.2f", parcours.getBudgetTotal())).append("€\n");
         textePartage.append(" Durée : ").append(parcours.getDureeTotale()).append(" min\n\n");
         textePartage.append(" Étapes :\n");
 
-        for (Etape e : parcours.getListeEtapes()) {
-            textePartage.append("- ").append(e.getCreneau()).append(" : ").append(e.getLieu().getName()).append("\n");
+        if (parcours.getListeEtapes() != null) {
+            for (Etape e : parcours.getListeEtapes()) {
+                if (e.getLieu() != null) {
+                    textePartage.append("- ").append(e.getCreneau()).append(" : ").append(e.getLieu().getName()).append("\n");
+                }
+            }
         }
 
         Intent sendIntent = new Intent();
@@ -156,7 +169,8 @@ public class ResultatFragment extends Fragment {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/pdf");
 
-        String nomFichier = "Parcours_" + parcours.getNomOption().replace(" ", "_") + ".pdf";
+        String titre = parcours.getNomOption() != null ? parcours.getNomOption() : "Parcours";
+        String nomFichier = "Parcours_" + titre.replace(" ", "_") + ".pdf";
         intent.putExtra(Intent.EXTRA_TITLE, nomFichier);
 
         createPdfLauncher.launch(intent);
@@ -175,7 +189,7 @@ public class ResultatFragment extends Fragment {
         paint.setColor(Color.BLACK);
         paint.setTextSize(24f);
         paint.setFakeBoldText(true);
-        canvas.drawText("Votre Parcours : " + parcours.getNomOption(), 40, yPosition, paint);
+        canvas.drawText("Votre Parcours : " + (parcours.getNomOption() != null ? parcours.getNomOption() : ""), 40, yPosition, paint);
         yPosition += 40;
 
         paint.setTextSize(16f);
@@ -189,30 +203,34 @@ public class ResultatFragment extends Fragment {
         yPosition += 50;
 
         paint.setColor(Color.BLACK);
-        for (Etape etape : parcours.getListeEtapes()) {
+        if (parcours.getListeEtapes() != null) {
+            for (Etape etape : parcours.getListeEtapes()) {
+                if (yPosition > 780) {
+                    document.finishPage(page);
+                    pageInfo = new PdfDocument.PageInfo.Builder(595, 842, document.getPages().size() + 1).create();
+                    page = document.startPage(pageInfo);
+                    canvas = page.getCanvas();
+                    yPosition = 50;
+                }
 
-            if (yPosition > 780) {
-                document.finishPage(page);
-                pageInfo = new PdfDocument.PageInfo.Builder(595, 842, document.getPages().size() + 1).create();
-                page = document.startPage(pageInfo);
-                canvas = page.getCanvas();
-                yPosition = 50;
+                paint.setTextSize(16f);
+                paint.setFakeBoldText(true);
+                String nomLieu = etape.getLieu() != null ? etape.getLieu().getName() : "Inconnu";
+                String titreEtape = "Jour " + etape.getJour() + " - " + etape.getCreneau() + " : " + nomLieu;
+                canvas.drawText(titreEtape, 40, yPosition, paint);
+                yPosition += 20;
+
+                paint.setTextSize(14f);
+                paint.setFakeBoldText(false);
+                paint.setColor(Color.GRAY);
+                String cat = (etape.getLieu() != null) ? etape.getLieu().getCategorie() : "";
+                double prix = (etape.getLieu() != null) ? etape.getLieu().getPrixVisite() : 0.0;
+                String detailsEtape = "   Catégorie : " + cat + " | Prix : " + prix + "€";
+                canvas.drawText(detailsEtape, 40, yPosition, paint);
+
+                paint.setColor(Color.BLACK);
+                yPosition += 35;
             }
-
-            paint.setTextSize(16f);
-            paint.setFakeBoldText(true);
-            String titreEtape = "Jour " + etape.getJour() + " - " + etape.getCreneau() + " : " + etape.getLieu().getName();
-            canvas.drawText(titreEtape, 40, yPosition, paint);
-            yPosition += 20;
-
-            paint.setTextSize(14f);
-            paint.setFakeBoldText(false);
-            paint.setColor(Color.GRAY);
-            String detailsEtape = "   Catégorie : " + etape.getLieu().getCategorie() + " | Prix : " + etape.getLieu().getPrixVisite() + "€";
-            canvas.drawText(detailsEtape, 40, yPosition, paint);
-
-            paint.setColor(Color.BLACK);
-            yPosition += 35;
         }
 
         document.finishPage(page);
@@ -240,6 +258,12 @@ public class ResultatFragment extends Fragment {
             if (saved) {
                 Toast.makeText(getContext(), "Parcours sauvegardé avec succès !", Toast.LENGTH_SHORT).show();
                 parcoursViewModel.resetParcoursSaved();
+                // Optionnel : masquer le bouton après sauvegarde réussie
+                View b = getView();
+                if (b != null) {
+                    Button btn = b.findViewById(R.id.btnSauvegarder);
+                    if (btn != null) btn.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -251,19 +275,21 @@ public class ResultatFragment extends Fragment {
     }
 
     private void displayParcoursOnMap() {
-        if (parcours.getListeEtapes().isEmpty()) return;
+        if (parcours == null || parcours.getListeEtapes() == null || parcours.getListeEtapes().isEmpty()) return;
 
         GeoPoint firstPoint = null;
         for (Etape etape : parcours.getListeEtapes()) {
             Lieu lieu = etape.getLieu();
-            GeoPoint gp = new GeoPoint(lieu.getLatitude(), lieu.getLongitude());
-            if (firstPoint == null) firstPoint = gp;
+            if (lieu != null) {
+                GeoPoint gp = new GeoPoint(lieu.getLatitude(), lieu.getLongitude());
+                if (firstPoint == null) firstPoint = gp;
 
-            Marker marker = new Marker(map);
-            marker.setPosition(gp);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setTitle(lieu.getName() + " (" + etape.getCreneau() + ")");
-            map.getOverlays().add(marker);
+                Marker marker = new Marker(map);
+                marker.setPosition(gp);
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                marker.setTitle(lieu.getName() + " (" + etape.getCreneau() + ")");
+                map.getOverlays().add(marker);
+            }
         }
 
         if (firstPoint != null) {

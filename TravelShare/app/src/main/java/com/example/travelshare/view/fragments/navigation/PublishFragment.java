@@ -149,12 +149,6 @@ public class PublishFragment extends Fragment {
         inputDate.setFocusable(false);
         inputDate.setOnClickListener(v -> showDatePicker());
 
-        view.findViewById(R.id.publish_btn_map).setOnClickListener(
-                v -> {
-                    Toast.makeText(getContext(), "Ouverture de la carte :", Toast.LENGTH_SHORT).show();
-                }
-        );
-
         btnMicDescription.setOnClickListener(v -> startVoiceRecognition(voiceLauncherDescription));
         btnMicIndication.setOnClickListener(v -> startVoiceRecognition(voiceLauncherIndication));
 

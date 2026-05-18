@@ -11,6 +11,7 @@ import com.example.travelshare.model.Post;
 import com.example.travelshare.model.User;
 import com.example.travelshare.repository.FireStoreCallBack;
 import com.example.travelshare.repository.GroupRepository;
+import com.example.travelshare.repository.ParcoursRepository;
 import com.example.travelshare.repository.PostRepository;
 import com.example.travelshare.repository.StorageRepository;
 import com.example.travelshare.repository.UserRepository;
@@ -26,6 +27,8 @@ public class UserViewModel extends ViewModel {
     private final PostRepository postRepository = new PostRepository();
     private final GroupRepository groupRepository = new GroupRepository();
     private final StorageRepository storageRepository = new StorageRepository();
+
+    private final ParcoursRepository parcoursRepository = new ParcoursRepository();
 
     private final MutableLiveData<User> currentUser = new MutableLiveData<>();
     private final MutableLiveData<User> selectedUser = new MutableLiveData<>();
@@ -94,23 +97,20 @@ public class UserViewModel extends ViewModel {
     }
 
     public void fetchUserParcours(String userId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("parcours")
-                .whereEqualTo("createur_id", userId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Parcours> parcoursList = new ArrayList<>();
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        try {
-                            Parcours p = doc.toObject(Parcours.class);
-                            parcoursList.add(p);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    userParcoursData.postValue(parcoursList);
-                })
-                .addOnFailureListener(e -> errorMessage.postValue(e.getMessage()));
+        isLoading.setValue(true);
+        parcoursRepository.fetchUserParcours(userId, new FireStoreCallBack<List<Parcours>>() {
+            @Override
+            public void onSuccess(List<Parcours> parcoursList) {
+                userParcoursData.postValue(parcoursList);
+                isLoading.postValue(false);
+            }
+
+            @Override
+            public void onFailure(String e) {
+                errorMessage.postValue(e);
+                isLoading.postValue(false);
+            }
+        });
     }
 
     public void searchUsers(String query) {

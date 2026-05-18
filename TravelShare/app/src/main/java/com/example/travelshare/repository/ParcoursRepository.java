@@ -16,10 +16,12 @@ public class ParcoursRepository {
     public void saveParcours(String userId, Parcours parcours, FireStoreCallBack<Void> callback) {
         WriteBatch batch = db.batch();
 
-        String parcoursId = db.collection("users").document(userId).collection(COLLECTION_PARCOURS).document().getId();
+        // On utilise la collection racine "parcours"
+        String parcoursId = db.collection(COLLECTION_PARCOURS).document().getId();
         parcours.setId(parcoursId);
+        parcours.setCreateur_id(userId);
 
-        batch.set(db.collection("users").document(userId).collection(COLLECTION_PARCOURS).document(parcoursId), parcours);
+        batch.set(db.collection(COLLECTION_PARCOURS).document(parcoursId), parcours);
 
         for (Etape etape : parcours.getListeEtapes()) {
             Lieu lieu = etape.getLieu();
@@ -34,7 +36,9 @@ public class ParcoursRepository {
     }
 
     public void fetchUserParcours(String userId, FireStoreCallBack<List<Parcours>> callback) {
-        db.collection("users").document(userId).collection(COLLECTION_PARCOURS)
+        // On cherche dans la collection racine avec le filtre createur_id
+        db.collection(COLLECTION_PARCOURS)
+                .whereEqualTo("createur_id", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     callback.onSuccess(queryDocumentSnapshots.toObjects(Parcours.class));

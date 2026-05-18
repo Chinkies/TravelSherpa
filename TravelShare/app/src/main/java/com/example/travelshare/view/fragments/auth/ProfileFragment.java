@@ -173,7 +173,7 @@ public class ProfileFragment extends Fragment {
         recyclerParcours.setLayoutManager(new LinearLayoutManager(getContext()));
         parcoursAdapter = new ParcoursAdapter(new ArrayList<>(), parcours -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("PARCOURS_SELECTIONNE", parcours);
+            bundle.putSerializable("parcours", parcours); // Clé changée de "PARCOURS_SELECTIONNE" à "parcours"
             Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_resultatFragment, bundle);
         });
         recyclerParcours.setAdapter(parcoursAdapter);

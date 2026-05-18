@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Parcours implements Serializable {
     private String id;
+    private String createur_id;
     private String nomOption;
     private List<Etape> listeEtapes;
     private double budgetTotal;
@@ -24,6 +25,9 @@ public class Parcours implements Serializable {
     // Getters et Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getCreateur_id() { return createur_id; }
+    public void setCreateur_id(String createur_id) { this.createur_id = createur_id; }
 
     public String getNomOption() { return nomOption; }
     public void setNomOption(String nomOption) { this.nomOption = nomOption; }
