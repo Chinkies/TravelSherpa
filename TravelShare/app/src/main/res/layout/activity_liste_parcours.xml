@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:id="@+id/layout_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:id="@+id/badgeDestination"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_white"
+                android:backgroundTint="#FFFFFF"
+                android:backgroundTintMode="src_over"
+                app:backgroundTint="#FFFFFF"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="Destination : --"
+                android:textSize="12sp"
+                android:textColor="#333333"
+                android:drawableStart="@android:drawable/ic_menu_compass"
+                android:drawablePadding="4dp"
+                android:elevation="1dp"/>
+
+            <TextView
+                android:id="@+id/badgePeriode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_white"
+                android:backgroundTint="#FFFFFF"
+                android:backgroundTintMode="src_over"
+                app:backgroundTint="#FFFFFF"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:layout_marginStart="8dp"
+                android:text="Période : Bientôt"
+                android:textSize="12sp"
+                android:textColor="#333333"
+                android:drawableStart="@android:drawable/ic_menu_today"
+                android:drawablePadding="4dp"
+                android:elevation="1dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textTitrePage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Parcours proposés"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:padding="16dp"/>
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewParcours"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_header"
+        android:paddingHorizontal="12dp"
+        android:clipToPadding="false"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/layout_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/progress_loader"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:indeterminateTint="@color/orange_travel" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Recherche des meilleurs parcours..."
+            android:textColor="#666666"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -11,12 +11,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -27,15 +23,14 @@ import com.example.travelshare.model.User;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
 
     private NavController navController;
+    private AppBarConfiguration appBarConfiguration;
     private AuthViewModel authViewModel;
     private UserViewModel userViewModel;
     private boolean isUserLogged = false;
-
     private User currentUserProfile = null;
 
     @Override
@@ -56,21 +51,14 @@ public class MainActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_bar);
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.feedFragment, R.id.searchFragment, R.id.groupsFragment, R.id.publishFragment)
+
+        appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.feedFragment, R.id.searchFragment, R.id.groupsFragment, 
+                R.id.publishFragment, R.id.preferenceFragment)
                 .build();
 
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(bottomNav, navController);
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            navController.popBackStack(item.getItemId(), false);
-            return NavigationUI.onNavDestinationSelected(item, navController);
-        });
-
-        bottomNav.setOnItemReselectedListener(item -> {
-            navController.popBackStack(item.getItemId(), false);
-        });
 
         authViewModel.getUser().observe(this, firebaseUser -> {
             if (firebaseUser != null) {
@@ -89,13 +77,12 @@ public class MainActivity extends AppCompatActivity {
                 invalidateOptionsMenu();
             }
         });
+    }
 
-        userViewModel.getErrorMessage().observe(this, error -> {
-            if (error != null && authViewModel.getCurrentUser() != null) {
-                authViewModel.logout();
-                userViewModel.clearError();
-            }
-        });
+    @Override
+    public boolean onSupportNavigateUp() {
+        return NavigationUI.navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 
     @Override
@@ -110,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
             View actionView = profileItem.getActionView();
             if (actionView != null) {
                 ImageView profileImage = actionView.findViewById(R.id.toolbar_profile_image);
-
                 if (profileImage != null) {
                     Glide.with(this)
                             .load(currentUserProfile.getProfilePictureUrl())
@@ -137,22 +123,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-
         if (itemId == R.id.header_login) {
             navController.navigate(R.id.authFragment);
             return true;
         } else if (itemId == R.id.header_profile) {
-            int startDestination = navController.getGraph().getStartDestinationId();
-
-            NavOptions navOptions = new NavOptions.Builder()
-                    .setLaunchSingleTop(true)
-                    .setPopUpTo(startDestination, false)
-                    .build();
-
-            navController.navigate(R.id.profileFragment, null, navOptions);
+            navController.navigate(R.id.profileFragment);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

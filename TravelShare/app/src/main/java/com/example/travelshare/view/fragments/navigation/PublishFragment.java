@@ -41,7 +41,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.GeoPoint;
 
-import org.checkerframework.checker.units.qual.C;
+//import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Calendar;

@@ -1,15 +1,19 @@
 package com.example.travelshare.viewmodel;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
-
 import android.content.Context;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import com.example.travelshare.model.Lieu;
 import com.example.travelshare.model.Post;
 import com.example.travelshare.repository.AuthRespository;
 import com.example.travelshare.repository.FireStoreCallBack;
+import com.example.travelshare.repository.LieuRepository;
 import com.example.travelshare.repository.PostRepository;
 import com.example.travelshare.repository.StorageRepository;
 import com.google.firebase.firestore.GeoPoint;
@@ -20,8 +24,9 @@ import java.util.List;
 
 public class PostViewModel extends ViewModel {
     private final PostRepository postRepository = new PostRepository();
-    private StorageRepository storageRepository = new StorageRepository();
-    private AuthRespository authRespository = new AuthRespository();
+    private final LieuRepository lieuRepository = new LieuRepository();
+    private final StorageRepository storageRepository = new StorageRepository();
+    private final AuthRespository authRespository = new AuthRespository();
 
     private MutableLiveData<List<Post>> posts = new MutableLiveData<>();
     private MutableLiveData<List<Post>> groupPost = new MutableLiveData<>();
@@ -32,7 +37,6 @@ public class PostViewModel extends ViewModel {
     private MutableLiveData<List<String>> officialTags = new MutableLiveData<>();
     private MutableLiveData<List<Post>> userPosts = new MutableLiveData<>();
 
-
     public LiveData<List<Post>> getPosts() { return posts; }
     public LiveData<List<Post>> getGroupPost() { return groupPost; }
     public LiveData<Boolean> getPostCreated() { return postCreated; }
@@ -42,9 +46,8 @@ public class PostViewModel extends ViewModel {
     public LiveData<List<String>> getOfficialTags() { return officialTags; }
     public LiveData<List<Post>> getUserPosts() { return userPosts; }
 
-    public void selectPost(Post post) {
-        selectedPost.setValue(post);
-    }
+    public void selectPost(Post post) { selectedPost.setValue(post); }
+
     public void loadFeed() {
         isLoading.setValue(true);
         postRepository.fetchFeedPosts(new FireStoreCallBack<List<Post>>() {
@@ -61,29 +64,12 @@ public class PostViewModel extends ViewModel {
         });
     }
 
-    public void loadUserPosts(String userId) {
+    public void loadPostsByTag(String tag) {
         isLoading.setValue(true);
-        postRepository.fetchUserPosts(userId, new FireStoreCallBack<List<Post>>() {
+        postRepository.fetchPostsByTag(tag, new FireStoreCallBack<List<Post>>() {
             @Override
             public void onSuccess(List<Post> result) {
-                userPosts.postValue(result);
-                isLoading.postValue(false);
-            }
-
-            @Override
-            public void onFailure(String e) {
-                isLoading.postValue(false);
-                errorMessage.postValue(e);
-            }
-        });
-    }
-
-    public void loadGroupPosts(String groupId) {
-        isLoading.setValue(true);
-        postRepository.fetchGroupPosts(groupId, new FireStoreCallBack<List<Post>>() {
-            @Override
-            public void onSuccess(List<Post> result) {
-                groupPost.postValue(result);
+                posts.postValue(result);
                 isLoading.postValue(false);
             }
             @Override
@@ -94,119 +80,66 @@ public class PostViewModel extends ViewModel {
         });
     }
 
-    public void loadOfficialTags() {
-        postRepository.fetchOfficialTags(new FireStoreCallBack<List<String>>() {
-            @Override
-            public void onSuccess(List<String> result) {
-                officialTags.postValue(result);
-            }
-
-            @Override
-            public void onFailure(String e) {
-                errorMessage.postValue("Erreur tags : " + e);
-            }
-        });
-    }
-
-    public void resetPostCreated() {
-        postCreated.setValue(false);
-    }
-
-    public void publishPost(Post post, android.net.Uri imageUri, String address, Context context) {
+    public void publishPost(Post post, Uri imageUri, String address, Context context) {
         isLoading.setValue(true);
 
         new Thread(() -> {
-            GeoPoint location = null;
-
+            GeoPoint geoPoint = null;
             if (address != null && !address.trim().isEmpty()) {
-                location = getLocationFromAddress(address, context);
-
-                if (location == null) {
-                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                geoPoint = getLocationFromAddress(address, context);
+                if (geoPoint == null) {
+                    new Handler(Looper.getMainLooper()).post(() -> {
                         isLoading.setValue(false);
-                        errorMessage.setValue("Adresse introuvable. Soyez plus précis (ex: Ville, Pays ou Rue).");
+                        errorMessage.setValue("Adresse introuvable.");
                     });
                     return;
                 }
             }
 
-            final GeoPoint finalLocation = location;
+            final GeoPoint finalGeo = geoPoint;
+            new Handler(Looper.getMainLooper()).post(() -> {
+                post.setLocation(finalGeo);
+                // On sauvegarde l'adresse textuelle dans le post pour faciliter la recherche
+                post.setIndication(address); 
 
-            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-                post.setLocation(finalLocation);
-
-                if (imageUri != null) {
-                    storageRepository.uploadGroupImage(imageUri, post.getAuthorId() + "_" + System.currentTimeMillis(), new FireStoreCallBack<String>() {
+                if (finalGeo != null) {
+                    String lieuId = "USER_PLACE_" + System.currentTimeMillis();
+                    Lieu nouveauLieu = new Lieu(lieuId, address, "Découverte", 0.0, 30, "Facile", true, finalGeo.getLatitude(), finalGeo.getLongitude(), "24h/24");
+                    post.setLieuId(lieuId);
+                    
+                    lieuRepository.saveLieu(nouveauLieu, new FireStoreCallBack<Void>() {
                         @Override
-                        public void onSuccess(String imageUrl) {
-                            post.setImageUrl(imageUrl);
-                            savePostToFirestore(post);
+                        public void onSuccess(Void result) {
+                            handleImageUpload(post, imageUri);
                         }
                         @Override
-                        public void onFailure(String e) {
-                            isLoading.setValue(false);
-                            errorMessage.setValue(e);
+                        public void onFailure(String error) {
+                            handleImageUpload(post, imageUri);
                         }
                     });
                 } else {
-                    savePostToFirestore(post);
+                    handleImageUpload(post, imageUri);
                 }
-
             });
         }).start();
     }
 
-    private GeoPoint getLocationFromAddress(String strAddress, Context context) {
-        if (strAddress == null || strAddress.isEmpty()) return null;
-
-        android.location.Geocoder coder = new android.location.Geocoder(context);
-        try {
-            List<android.location.Address> address = coder.getFromLocationName(strAddress, 1);
-            if (address != null && !address.isEmpty()) {
-                android.location.Address loc = address.get(0);
-                return new GeoPoint(loc.getLatitude(), loc.getLongitude());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void updatePostCommentCount(String postId, int count) {
-        List<Post> currentPosts = posts.getValue();
-        if (currentPosts != null) {
-            for (Post p : currentPosts) {
-                if (p.getId().equals(postId)) {
-                    p.setCommentCount(count);
-                    break;
-                }
-            }
-            posts.setValue(new ArrayList<>(currentPosts));
-        }
-
-        if (selectedPost.getValue() != null && selectedPost.getValue().getId().equals(postId)) {
-            Post p = selectedPost.getValue();
-
-            if (p.getCommentCount() == count) {
-                return;
-            }
-
-            p.setCommentCount(count);
-            selectedPost.setValue(p);
-
-            if (authRespository.getCurrentUser() == null) {
-                return;
-            }
-
-            postRepository.updatePost(p, new FireStoreCallBack<Void>() {
+    private void handleImageUpload(Post post, Uri imageUri) {
+        if (imageUri != null) {
+            storageRepository.uploadGroupImage(imageUri, post.getAuthorId() + "_" + System.currentTimeMillis(), new FireStoreCallBack<String>() {
                 @Override
-                public void onSuccess(Void result) {}
-
+                public void onSuccess(String imageUrl) {
+                    post.setImageUrl(imageUrl);
+                    savePostToFirestore(post);
+                }
                 @Override
                 public void onFailure(String e) {
-                    errorMessage.postValue("Erreur update commentaires : " + e);
+                    isLoading.setValue(false);
+                    errorMessage.setValue(e);
                 }
             });
+        } else {
+            savePostToFirestore(post);
         }
     }
 
@@ -227,64 +160,77 @@ public class PostViewModel extends ViewModel {
         });
     }
 
-    public void toggleLike(Post post, String userId) {
-        if (userId == null) return;
+    private GeoPoint getLocationFromAddress(String strAddress, Context context) {
+        android.location.Geocoder coder = new android.location.Geocoder(context);
+        try {
+            List<android.location.Address> address = coder.getFromLocationName(strAddress, 1);
+            if (address != null && !address.isEmpty()) {
+                return new GeoPoint(address.get(0).getLatitude(), address.get(0).getLongitude());
+            }
+        } catch (IOException e) { e.printStackTrace(); }
+        return null;
+    }
 
-        if (post.getLikers() == null) {
-            post.setLikers(new ArrayList<>());
-        }
-
-        boolean alreadyLiked = post.getLikers().contains(userId);
-
-        if (alreadyLiked) {
-            post.getLikers().remove(userId);
-            post.setLikesCount(post.getLikesCount() - 1);
-        } else {
-            post.getLikers().add(userId);
-            post.setLikesCount(post.getLikesCount() + 1);
-        }
-
-        selectedPost.setValue(post);
-
+    public void updatePostCommentCount(String postId, int count) {
         List<Post> currentPosts = posts.getValue();
         if (currentPosts != null) {
+            for (Post p : currentPosts) {
+                if (p.getId().equals(postId)) {
+                    p.setCommentCount(count);
+                    break;
+                }
+            }
             posts.setValue(new ArrayList<>(currentPosts));
         }
 
-        List<Post> currentGroupPosts = groupPost.getValue();
-        if (currentGroupPosts != null) {
-            groupPost.setValue(new ArrayList<>(currentGroupPosts));
+        if (selectedPost.getValue() != null && selectedPost.getValue().getId().equals(postId)) {
+            Post p = selectedPost.getValue();
+            if (p.getCommentCount() == count) return;
+            p.setCommentCount(count);
+            selectedPost.setValue(p);
+
+            postRepository.updatePost(p, new FireStoreCallBack<Void>() {
+                @Override public void onSuccess(Void result) {}
+                @Override public void onFailure(String e) { errorMessage.postValue("Erreur update : " + e); }
+            });
         }
+    }
 
-        List<Post> currentUserPosts = userPosts.getValue();
-        if (currentUserPosts != null) {
-            userPosts.setValue(new ArrayList<>(currentUserPosts));
-        }
-
-        postRepository.toggleLike(post, userId, !alreadyLiked, new FireStoreCallBack<Void>() {
-            @Override
-            public void onSuccess(Void result) {}
-
-            @Override
-            public void onFailure(String e) {
-                errorMessage.postValue("Erreur lors du like : " + e);
-            }
+    public void loadUserPosts(String userId) {
+        isLoading.setValue(true);
+        postRepository.fetchUserPosts(userId, new FireStoreCallBack<List<Post>>() {
+            @Override public void onSuccess(List<Post> result) { userPosts.postValue(result); isLoading.postValue(false); }
+            @Override public void onFailure(String e) { isLoading.postValue(false); errorMessage.postValue(e); }
         });
     }
 
-    public void loadPostsByTag(String tag) {
+    public void loadGroupPosts(String groupId) {
         isLoading.setValue(true);
-        postRepository.fetchPostsByTag(tag, new FireStoreCallBack<List<Post>>() {
-            @Override
-            public void onSuccess(List<Post> result) {
-                posts.setValue(result);
-                isLoading.setValue(false);
-            }
-            @Override
-            public void onFailure(String e) {
-                errorMessage.setValue(e);
-                isLoading.setValue(false);
-            }
+        postRepository.fetchGroupPosts(groupId, new FireStoreCallBack<List<Post>>() {
+            @Override public void onSuccess(List<Post> result) { groupPost.postValue(result); isLoading.postValue(false); }
+            @Override public void onFailure(String e) { isLoading.postValue(false); errorMessage.postValue(e); }
+        });
+    }
+
+    public void loadOfficialTags() {
+        postRepository.fetchOfficialTags(new FireStoreCallBack<List<String>>() {
+            @Override public void onSuccess(List<String> result) { officialTags.postValue(result); }
+            @Override public void onFailure(String e) { errorMessage.postValue("Erreur tags : " + e); }
+        });
+    }
+
+    public void resetPostCreated() { postCreated.setValue(false); }
+
+    public void toggleLike(Post post, String userId) {
+        if (userId == null) return;
+        if (post.getLikers() == null) post.setLikers(new ArrayList<>());
+        boolean alreadyLiked = post.getLikers().contains(userId);
+        if (alreadyLiked) { post.getLikers().remove(userId); post.setLikesCount(post.getLikesCount() - 1); }
+        else { post.getLikers().add(userId); post.setLikesCount(post.getLikesCount() + 1); }
+        selectedPost.setValue(post);
+        postRepository.toggleLike(post, userId, !alreadyLiked, new FireStoreCallBack<Void>() {
+            @Override public void onSuccess(Void result) {}
+            @Override public void onFailure(String e) { errorMessage.postValue("Erreur like : " + e); }
         });
     }
 }

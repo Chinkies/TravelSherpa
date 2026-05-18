@@ -70,6 +70,21 @@ public class PostRepository {
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
+    public void fetchPostsByLieu(String lieuId, FireStoreCallBack<List<Post>> callback) {
+        db.collection(COLLECTION_POSTS)
+                .whereEqualTo("lieuId", lieuId)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Post> postList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        postList.add(doc.toObject(Post.class));
+                    }
+                    callback.onSuccess(postList);
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
     public void updatePost(Post post, FireStoreCallBack<Void> callback) {
         db.collection(COLLECTION_POSTS).document(post.getId())
                 .set(post)

@@ -13,8 +13,10 @@ recyclerview = "1.4.0"
 cardview = "1.0.0"
 materialVersion = "1.13.0"
 googleServices = "4.4.1"
-firebaseBom = "32.8.0"
+firebaseBom = "33.10.0"
 glide = "4.16.0"
+retrofit = "2.9.0"
+osmdroid = "6.1.18"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -32,9 +34,13 @@ google-material = { group = "com.google.android.material", name = "material", ve
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
-firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

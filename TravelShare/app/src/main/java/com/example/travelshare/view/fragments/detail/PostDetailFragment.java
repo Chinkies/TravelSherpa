@@ -3,15 +3,6 @@ package com.example.travelshare.view.fragments.detail;
 import static com.example.travelshare.utils.NavigationUtils.showPostMenu;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +11,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
@@ -30,8 +31,10 @@ import com.example.travelshare.model.User;
 import com.example.travelshare.viewmodel.CommentViewModel;
 import com.example.travelshare.viewmodel.PostViewModel;
 import com.example.travelshare.viewmodel.UserViewModel;
+import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class PostDetailFragment extends Fragment {
@@ -48,6 +51,7 @@ public class PostDetailFragment extends Fragment {
     private ImageView imgPost, imgProfil;
     private EditText inputComment;
     private ImageButton btnSend;
+    private MaterialButton btnViewLieu;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,17 +72,25 @@ public class PostDetailFragment extends Fragment {
                 this.currentPost = post;
                 bindPostData();
                 commentViewModel.fetchComment(post.getId());
+                
+                if ((currentPost.getIndication() != null && !currentPost.getIndication().isEmpty()) || currentPost.getLocation() != null) {
+                    btnViewLieu.setVisibility(View.VISIBLE);
+                } else {
+                    btnViewLieu.setVisibility(View.GONE);
+                }
             }
         });
 
         setupRecyclerView(view);
 
         commentViewModel.getComment().observe(getViewLifecycleOwner(), allComments -> {
-            commentAdapter.setComments(allComments);
-            comments.setText(allComments.size() + " commentaires");
+            if (allComments != null) {
+                commentAdapter.setComments(allComments);
+                comments.setText(allComments.size() + " commentaires");
 
-            if (userViewModel.getSelectedUser().getValue() != null) {
-                postViewModel.updatePostCommentCount(currentPost.getId(), allComments.size());
+                if (userViewModel.getSelectedUser().getValue() != null && currentPost != null) {
+                    postViewModel.updatePostCommentCount(currentPost.getId(), allComments.size());
+                }
             }
         });
 
@@ -86,7 +98,6 @@ public class PostDetailFragment extends Fragment {
     }
 
     private void initView(View view) {
-
         imgProfil = view.findViewById(R.id.post_detail_profil_picture);
         pseudo = view.findViewById(R.id.post_detail_pseudo);
         date = view.findViewById(R.id.post_detail_date);
@@ -102,9 +113,21 @@ public class PostDetailFragment extends Fragment {
 
         inputComment = view.findViewById(R.id.post_detail_comment_input);
         btnSend = view.findViewById(R.id.post_detail_btn_send);
+        btnViewLieu = view.findViewById(R.id.post_detail_btn_view_lieu);
+
+        View.OnClickListener goToProfileListener = v -> {
+            if (currentPost != null && currentPost.getAuthorId() != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("userId", currentPost.getAuthorId());
+                Navigation.findNavController(view).navigate(R.id.action_global_to_profileFragment, bundle);
+            }
+        };
+
+        imgProfil.setOnClickListener(goToProfileListener);
+        pseudo.setOnClickListener(goToProfileListener);
 
         view.findViewById(R.id.post_detail_btn_adresse).setOnClickListener(v -> {
-            if (currentPost.getLocation() != null) {
+            if (currentPost != null && currentPost.getLocation() != null) {
                 double latitude = currentPost.getLocation().getLatitude();
                 double longitude = currentPost.getLocation().getLongitude();
                 String uri = String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f", latitude, longitude, latitude, longitude);
@@ -117,19 +140,54 @@ public class PostDetailFragment extends Fragment {
 
         view.findViewById(R.id.post_detail_btn_like).setOnClickListener(v -> {
             User currentUser = userViewModel.getSelectedUser().getValue();
-            if (currentUser != null) {
+            if (currentUser != null && currentPost != null) {
                 postViewModel.toggleLike(currentPost, currentUser.getId());
             }
         });
 
         view.findViewById(R.id.post_detail_btn_more).setOnClickListener(v -> {
-            showPostMenu(getContext(), view, currentPost);
+            if (currentPost != null) {
+                showPostMenu(getContext(), view, currentPost);
+            }
+        });
+
+        btnViewLieu.setOnClickListener(v -> {
+            if (currentPost != null) {
+                Bundle bundle = new Bundle();
+                
+                if (currentPost.getLocation() != null) {
+                    bundle.putDouble("LATITUDE", currentPost.getLocation().getLatitude());
+                    bundle.putDouble("LONGITUDE", currentPost.getLocation().getLongitude());
+                    
+                    String coords = String.format(Locale.US, "%.5f, %.5f", 
+                            currentPost.getLocation().getLatitude(), 
+                            currentPost.getLocation().getLongitude());
+                    bundle.putString("SUGGESTED_LIEU", coords);
+                } else {
+                    bundle.putString("SUGGESTED_LIEU", currentPost.getIndication());
+                }
+
+                if (currentPost.getTags() != null) {
+                    bundle.putStringArrayList("POST_TAGS", new ArrayList<>(currentPost.getTags()));
+                }
+
+                NavController navController = Navigation.findNavController(view);
+
+                NavOptions navOptions = new NavOptions.Builder()
+                        .setLaunchSingleTop(true)
+                        .setRestoreState(true)
+                        .setPopUpTo(navController.getGraph().getStartDestinationId(), false, true)
+                        .build();
+
+                navController.navigate(R.id.preferenceFragment, bundle, navOptions);
+            }
         });
     }
 
     private void bindPostData() {
+        if (currentPost == null) return;
+
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.FRANCE);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE);
 
         pseudo.setText(currentPost.getAuthorName());
         description.setText(currentPost.getDescription());
@@ -142,9 +200,8 @@ public class PostDetailFragment extends Fragment {
         }
 
         if (currentPost.getLocation() != null) {
-            String locationStr = currentPost.getLocation().getLatitude() + "° N, "
-                    + currentPost.getLocation().getLongitude() + "° E";
-
+            String locationStr = String.format(Locale.FRANCE, "%.4f° N, %.4f° E", 
+                    currentPost.getLocation().getLatitude(), currentPost.getLocation().getLongitude());
             location.setText(locationStr);
         } else {
             location.setText("Non spécifiée");
@@ -171,28 +228,20 @@ public class PostDetailFragment extends Fragment {
     private void setupRecyclerView(View view) {
         RecyclerView recyclerComments = view.findViewById(R.id.post_detail_comment_section);
         commentAdapter = new CommentAdapter();
-
         recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerComments.setAdapter(commentAdapter);
-
     }
 
     private void sendComment() {
         if (currentPost == null) return;
-
         String text = inputComment.getText().toString().trim();
         if (text.isEmpty()) return;
-
         User currentUser = userViewModel.getSelectedUser().getValue();
-
         if (currentUser == null) {
-            Toast.makeText(getContext(), "Erreur : Utilisateur non identifié. Réessayez dans un instant.", Toast.LENGTH_SHORT).show();
-            // Diriger vers la connection ????
+            Toast.makeText(getContext(), "Veuillez vous connecter pour commenter", Toast.LENGTH_SHORT).show();
             return;
         }
-
         btnSend.setEnabled(false);
-
         Comment newComment = new Comment(
                 currentPost.getId(),
                 currentUser.getId(),
@@ -200,9 +249,7 @@ public class PostDetailFragment extends Fragment {
                 text,
                 currentUser.getProfilePictureUrl()
         );
-
         commentViewModel.addComment(newComment);
-
         inputComment.setText("");
         btnSend.setEnabled(true);
     }

@@ -1,7 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.TravelShare" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Main branding colors. -->
+        <item name="colorPrimary">@color/orange_travel</item>
+        <item name="colorSecondary">@color/navy_blue</item>
+        <item name="colorTertiary">@color/yellow_gold</item>
+
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/navy_blue</item>
     </style>
 </resources>

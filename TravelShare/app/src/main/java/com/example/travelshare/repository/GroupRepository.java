@@ -23,7 +23,6 @@ public class GroupRepository {
 
         ref.set(group)
                 .addOnSuccessListener(aVoid -> {
-                    // INCRÉMENTATION : Le créateur possède un groupe de plus
                     db.collection(COLLECTION_USERS).document(creatorId)
                             .update("nbGroups", FieldValue.increment(1))
                             .addOnSuccessListener(v -> callback.onSuccess(ref.getId()))

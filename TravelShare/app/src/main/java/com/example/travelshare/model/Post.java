@@ -23,7 +23,7 @@ public class Post {
     private boolean isPublic;
     private List<String> groupIds;
     private List<String> tags;
-
+    private String lieuId;
     public Post() {}
 
     public Post(String authorId, String authorName, String description, GeoPoint location, String indication,
@@ -59,6 +59,7 @@ public class Post {
     public boolean isPublic() { return isPublic; }
     public List<String> getGroupIds() { return groupIds; }
     public List<String> getTags() { return tags; }
+    public String getLieuId() { return lieuId; }
 
     public void setId(String id) { this.id = id; }
     public void setAuthorId(String authorId) { this.authorId = authorId; }
@@ -75,4 +76,5 @@ public class Post {
     public void setPublic(boolean isPublic) { this.isPublic = isPublic; }
     public void setGroupIds(List<String> groupIds) { this.groupIds = groupIds; }
     public void setTags(List<String> tags) { this.tags = tags; }
+    public void setLieuId(String lieuId) { this.lieuId = lieuId; }
 }
