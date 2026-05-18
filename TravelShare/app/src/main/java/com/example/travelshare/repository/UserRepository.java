@@ -1,6 +1,7 @@
 package com.example.travelshare.repository;
 
 import com.example.travelshare.model.User;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -68,5 +69,19 @@ public class UserRepository {
                 .update("pseudo", pseudo, "description", desc, "profilePictureUrl", url)
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void toggleFavoriteLieu(String userId, String lieuId, boolean isAdd, FireStoreCallBack<Void> callback) {
+        if (isAdd) {
+            db.collection(COLLECTION_USERS).document(userId)
+                    .update("favoriteLieuIds", FieldValue.arrayUnion(lieuId))
+                    .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                    .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+        } else {
+            db.collection(COLLECTION_USERS).document(userId)
+                    .update("favoriteLieuIds", FieldValue.arrayRemove(lieuId))
+                    .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                    .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+        }
     }
 }

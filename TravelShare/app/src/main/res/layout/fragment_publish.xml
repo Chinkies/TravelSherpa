@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:background="#FFFFFF"
     tools:context=".view.fragments.navigation.PublishFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -19,6 +20,7 @@
             android:layout_marginTop="12dp"
             android:text="Ajoutez une photo :"
             android:textSize="28sp"
+            android:textColor="#333333"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -39,7 +41,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/publish_label_photo"
-            app:strokeColor="#757575"
+            app:strokeColor="#DDDDDD"
             app:strokeWidth="2dp">
 
             <ImageView
@@ -61,6 +63,7 @@
             android:layout_marginEnd="22dp"
             android:text="Description :"
             android:textSize="24sp"
+            android:textColor="#333333"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -72,7 +75,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:boxStrokeColor="#757575"
+            app:boxStrokeColor="@color/orange_travel"
             app:hintEnabled="false"
             app:layout_constraintEnd_toEndOf="@+id/publish_label_description"
             app:layout_constraintStart_toStartOf="@+id/publish_label_description"
@@ -84,6 +87,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="top"
                 android:hint="Ajoutez une description..."
+                android:textColor="#333333"
+                android:textColorHint="#999999"
                 android:inputType="textMultiLine"
                 android:maxLines="9"
                 android:minLines="1"
@@ -98,6 +103,7 @@
             android:layout_marginTop="12dp"
             android:text="Date :"
             android:textSize="24sp"
+            android:textColor="#333333"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="@+id/publish_description"
             app:layout_constraintStart_toStartOf="@+id/publish_description"
@@ -109,7 +115,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:boxStrokeColor="#757575"
+            app:boxStrokeColor="@color/orange_travel"
             app:hintEnabled="false"
             app:layout_constraintEnd_toEndOf="@+id/publish_label_date"
             app:layout_constraintStart_toStartOf="@+id/publish_label_date"
@@ -121,6 +127,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="top"
                 android:hint="jj/mm/aaaa"
+                android:textColor="#333333"
+                android:textColorHint="#999999"
                 android:inputType="datetime|date"
                 android:scrollbars="vertical" />
 
@@ -133,6 +141,7 @@
             android:layout_marginTop="12dp"
             android:text="Coordonnées :"
             android:textSize="24sp"
+            android:textColor="#333333"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="@+id/publish_date"
             app:layout_constraintStart_toStartOf="@+id/publish_date"
@@ -144,7 +153,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:boxStrokeColor="#757575"
+            app:boxStrokeColor="@color/orange_travel"
             app:hintEnabled="false"
             app:layout_constraintEnd_toEndOf="@+id/publish_label_localisation"
             app:layout_constraintStart_toStartOf="@+id/publish_label_localisation"
@@ -155,6 +164,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Ex: 48.8584, 2.2945"
+                android:textColor="#333333"
+                android:textColorHint="#999999"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -178,6 +189,7 @@
             android:layout_marginTop="12dp"
             android:text="Indications :"
             android:textSize="24sp"
+            android:textColor="#333333"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="@+id/publish_localisation"
             app:layout_constraintStart_toStartOf="@+id/publish_localisation"
@@ -189,7 +201,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:boxStrokeColor="#757575"
+            app:boxStrokeColor="@color/orange_travel"
             app:hintEnabled="false"
             app:layout_constraintEnd_toEndOf="@+id/publish_label_indication"
             app:layout_constraintStart_toStartOf="@+id/publish_label_indication"
@@ -200,7 +212,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Ajoutez des indications pour trouver le lieu"
+                android:textColor="#333333"
+                android:textColorHint="#999999"
                 android:inputType="text" />
+
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
@@ -210,6 +225,7 @@
             android:layout_marginTop="12dp"
             android:text="Tags :"
             android:textSize="24sp"
+            android:textColor="#333333"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="@+id/publish_indication"
             app:layout_constraintStart_toStartOf="@+id/publish_indication"

@@ -3,7 +3,6 @@ package com.example.travelshare.viewmodel;
 import android.net.Uri;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -15,6 +14,9 @@ import com.example.travelshare.repository.GroupRepository;
 import com.example.travelshare.repository.PostRepository;
 import com.example.travelshare.repository.StorageRepository;
 import com.example.travelshare.repository.UserRepository;
+import com.example.travelshare.travelpath.Parcours;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ public class UserViewModel extends ViewModel {
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<List<Post>> userPostData = new MutableLiveData<>();
     private final MutableLiveData<List<Group>> userGroupData = new MutableLiveData<>();
+    private final MutableLiveData<List<Parcours>> userParcoursData = new MutableLiveData<>();
 
     public LiveData<User> getCurrentUser() { return currentUser; }
     public LiveData<User> getSelectedUser() { return selectedUser; }
@@ -40,6 +43,7 @@ public class UserViewModel extends ViewModel {
     public LiveData<String> getErrorMessage() { return errorMessage; }
     public LiveData<List<Post>> getUserPost() { return userPostData; }
     public LiveData<List<Group>> getUserGroup() { return userGroupData; }
+    public LiveData<List<Parcours>> getUserParcours() { return userParcoursData; }
 
     public void loadCurrentUser(String userId) {
         userRepository.getUser(userId, new FireStoreCallBack<User>() {
@@ -85,6 +89,28 @@ public class UserViewModel extends ViewModel {
             @Override
             public void onFailure(String e) { errorMessage.postValue(e); }
         });
+
+        fetchUserParcours(userId);
+    }
+
+    public void fetchUserParcours(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("parcours")
+                .whereEqualTo("createur_id", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Parcours> parcoursList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        try {
+                            Parcours p = doc.toObject(Parcours.class);
+                            parcoursList.add(p);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    userParcoursData.postValue(parcoursList);
+                })
+                .addOnFailureListener(e -> errorMessage.postValue(e.getMessage()));
     }
 
     public void searchUsers(String query) {

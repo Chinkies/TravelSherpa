@@ -1,12 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/feedFragment"> <fragment
-    android:id="@+id/feedFragment"
-    android:name="com.example.travelshare.view.fragments.navigation.FeedFragment"
-    android:label="Accueil"
-    tools:layout="@layout/fragment_feed" />
+    app:startDestination="@id/feedFragment">
+
+    <!-- Actions Globales -->
+    <action
+        android:id="@+id/action_global_to_profileFragment"
+        app:destination="@id/profileFragment" />
+    <action
+        android:id="@+id/action_global_to_postDetailFragment"
+        app:destination="@id/postDetailFragment" />
+    <action
+        android:id="@+id/action_global_to_groupDetailFragment"
+        app:destination="@id/groupDetailFragment" />
+
+    <fragment
+        android:id="@+id/feedFragment"
+        android:name="com.example.travelshare.view.fragments.navigation.FeedFragment"
+        android:label="Accueil"
+        tools:layout="@layout/fragment_feed" />
 
     <fragment
         android:id="@+id/searchFragment"
@@ -28,36 +42,47 @@
     </fragment>
 
     <fragment
+        android:id="@+id/groupCreateFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupCreateFragment"
+        android:label="Créer un Groupe"
+        tools:layout="@layout/fragment_group_create">
+        <action
+            android:id="@+id/action_groupCreateFragment_to_groupDetailFragment"
+            app:destination="@id/groupDetailFragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/publishFragment"
         android:name="com.example.travelshare.view.fragments.navigation.PublishFragment"
         android:label="Nouvelle publication"
         tools:layout="@layout/fragment_publish" />
 
+    <!-- TRAVEL PATH -->
     <fragment
-        android:id="@+id/groupDetailFragment"
-        android:name="com.example.travelshare.view.fragments.group.GroupDetailFragment"
-        android:label="Détail du Groupe"
-        tools:layout="@layout/fragment_group_detail">
+        android:id="@+id/preferenceFragment"
+        android:name="com.example.travelshare.view.fragments.travelpath.PreferenceFragment"
+        android:label="Préférences"
+        tools:layout="@layout/activity_preference">
         <action
-            android:id="@+id/action_groupDetailFragment_to_groupGestionFragment"
-            app:destination="@+id/groupGestionFragment"/>
+            android:id="@+id/action_preferenceFragment_to_listeParcoursFragment"
+            app:destination="@id/listeParcoursFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/groupGestionFragment"
-        android:name="com.example.travelshare.view.fragments.group.GroupGestionFragment"
-        android:label="Gestion du Groupe"
-        tools:layout="@layout/fragment_group_gestion" />
+        android:id="@+id/listeParcoursFragment"
+        android:name="com.example.travelshare.view.fragments.travelpath.ListeParcoursFragment"
+        android:label="Parcours trouvés"
+        tools:layout="@layout/activity_liste_parcours">
+        <action
+            android:id="@+id/action_listeParcoursFragment_to_resultatFragment"
+            app:destination="@id/resultatFragment" />
+    </fragment>
 
     <fragment
-        android:id="@+id/groupCreateFragment"
-        android:name="com.example.travelshare.view.fragments.group.GroupCreateFragment"
-        android:label="Création d'un Groupe"
-        tools:layout="@layout/fragment_group_create">
-        <action
-            android:id="@+id/action_groupCreateFragment_to_groupDetailFragment"
-            app:destination="@id/groupDetailFragment"/>
-    </fragment>
+        android:id="@+id/resultatFragment"
+        android:name="com.example.travelshare.view.fragments.travelpath.ResultatFragment"
+        android:label="Détail du Parcours"
+        tools:layout="@layout/activity_resultat" />
 
     <fragment
         android:id="@+id/profileFragment"
@@ -67,13 +92,25 @@
         <action
             android:id="@+id/action_profileFragment_to_profileEditFragment"
             app:destination="@id/profileModifyFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_resultatFragment"
+            app:destination="@id/resultatFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/postDetailFragment"
         android:name="com.example.travelshare.view.fragments.detail.PostDetailFragment"
         android:label="Détail du Post"
-        tools:layout="@layout/fragment_post_detail" />
+        tools:layout="@layout/fragment_post_detail">
+        <action
+            android:id="@+id/action_postDetailFragment_to_preferenceFragment"
+            app:destination="@id/preferenceFragment"
+            app:popUpTo="@id/feedFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/profileModifyFragment"
@@ -97,17 +134,19 @@
         android:label="Inscription"
         tools:layout="@layout/fragment_auth_creation" />
 
-    <action
-        android:id="@+id/action_global_to_profileFragment"
-        app:destination="@id/profileFragment" />
+    <fragment
+        android:id="@+id/groupDetailFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupDetailFragment"
+        android:label="Détail du Groupe">
+        <action
+            android:id="@+id/action_groupDetailFragment_to_groupGestionFragment"
+            app:destination="@id/groupGestionFragment" />
+    </fragment>
 
-    <action
-        android:id="@+id/action_global_to_postDetailFragment"
-        app:destination="@id/postDetailFragment" />
-
-    <action
-        android:id="@+id/action_global_to_groupDetailFragment"
-        app:destination="@id/groupDetailFragment" />
-
+    <fragment
+        android:id="@+id/groupGestionFragment"
+        android:name="com.example.travelshare.view.fragments.group.GroupGestionFragment"
+        android:label="Gérer le groupe"
+        tools:layout="@layout/fragment_group_gestion" />
 
 </navigation>

@@ -16,4 +16,8 @@
         android:id="@+id/searchFragment"
         android:icon="@drawable/search"
         android:title="Recherche" />
+    <item
+        android:id="@+id/preferenceFragment"
+        android:icon="@drawable/ic_map"
+        android:title="Parcours"/>
 </menu>

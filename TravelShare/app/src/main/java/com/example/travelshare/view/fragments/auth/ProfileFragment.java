@@ -23,6 +23,7 @@ import com.example.travelshare.R;
 import com.example.travelshare.adapter.GroupAdapter;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
+import com.example.travelshare.travelpath.adapter.ParcoursAdapter;
 import com.example.travelshare.utils.NavigationUtils;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.GroupViewModel;
@@ -30,14 +31,16 @@ import com.example.travelshare.viewmodel.PostViewModel;
 import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
+
 public class ProfileFragment extends Fragment {
 
     private ImageView profilPicture;
     private TextView profilPseudo, profilDesc, countPubs,
-        countGroups, countLikes;
+        countGroups, countLikes, countParcours;
     private Button btnAction;
     private RadioGroup radioGroup;
-    private RecyclerView recyclerPublications, recyclerGroups;
+    private RecyclerView recyclerPublications, recyclerGroups, recyclerParcours;
 
     private UserViewModel userViewModel;
     private GroupViewModel groupViewModel;
@@ -46,6 +49,7 @@ public class ProfileFragment extends Fragment {
 
     private PostAdapter postAdapter;
     private GroupAdapter groupAdapter;
+    private ParcoursAdapter parcoursAdapter;
 
 
     public ProfileFragment() {
@@ -78,17 +82,16 @@ public class ProfileFragment extends Fragment {
         countPubs = view.findViewById(R.id.profile_count_publications);
         countGroups = view.findViewById(R.id.profile_count_groups);
         countLikes = view.findViewById(R.id.profile_count_likes);
+        countParcours = view.findViewById(R.id.profile_count_parcours);
         btnAction = view.findViewById(R.id.button_modification);
         radioGroup = view.findViewById(R.id.radio_group);
         recyclerPublications = view.findViewById(R.id.recycler_publications);
         recyclerGroups = view.findViewById(R.id.recycler_groups);
+        recyclerParcours = view.findViewById(R.id.recycler_parcours);
 
         if (currentUserId.isEmpty()) {
             radioGroup.setVisibility(View.GONE);
             recyclerPublications.setVisibility(View.VISIBLE);
-            recyclerGroups.setVisibility(View.GONE);
-
-            view.findViewById(R.id.profile_count_groups).setVisibility(View.GONE);
         } else {
             radioGroup.setVisibility(View.VISIBLE);
         }
@@ -114,22 +117,19 @@ public class ProfileFragment extends Fragment {
             Navigation.findNavController(view).navigate(R.id.feedFragment);
         });
 
-        setupRecyclerViews(recyclerPublications, recyclerGroups, view, currentUserId);
-        setupObservers(profilPseudo, profilDesc, profilPicture, countPubs, countGroups, countLikes);
+        setupRecyclerViews(view, currentUserId);
+        setupObservers();
 
         radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radio_display_publications) {
-                recyclerPublications.setVisibility(View.VISIBLE);
-                recyclerGroups.setVisibility(View.GONE);
-            } else if (checkedId == R.id.radio_display_groups) {
-                recyclerPublications.setVisibility(View.GONE);
-                recyclerGroups.setVisibility(View.VISIBLE);
-            }
+            recyclerPublications.setVisibility(checkedId == R.id.radio_display_publications ? View.VISIBLE : View.GONE);
+            recyclerGroups.setVisibility(checkedId == R.id.radio_display_groups ? View.VISIBLE : View.GONE);
+            recyclerParcours.setVisibility(checkedId == R.id.radio_display_parcours ? View.VISIBLE : View.GONE);
         });
 
         if (!visitedUserId.isEmpty()) {
             userViewModel.loadUser(visitedUserId);
             postViewModel.loadUserPosts(visitedUserId);
+            userViewModel.fetchUserParcours(visitedUserId);
         } else {
             profilPseudo.setText("Mode Invité");
             profilDesc.setText("Connectez-vous pour accéder à votre profil.");
@@ -139,103 +139,87 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void setupRecyclerViews(RecyclerView recyclerPubs, RecyclerView recyclerGrps, View view, String currentUserId) {
-        recyclerPubs.setLayoutManager(new LinearLayoutManager(getContext()));
-
+    private void setupRecyclerViews(View view, String currentUserId) {
+        recyclerPublications.setLayoutManager(new LinearLayoutManager(getContext()));
         postAdapter = new PostAdapter(currentUserId.isEmpty() ? null : currentUserId, new PostAdapter.OnPostClickListener() {
             @Override
             public void onPostClick(Post post) {
                 postViewModel.selectPost(post);
                 Bundle b = new Bundle();
                 b.putString("postId", post.getId());
-                Navigation.findNavController(view).navigate(R.id.action_global_to_postDetailFragment, b);
+                // Utilisation de l'action locale pour corriger l'erreur de compilation
+                Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_postDetailFragment, b);
             }
             @Override public void onProfileClick(String id) { }
             @Override public void onMoreClick(View v, Post post) {
                 NavigationUtils.showPostMenu(requireContext(), v, post);
             }
             @Override public void onLikeClick(Post post) {
-                if (currentUserId.isEmpty()) {
-                    Toast.makeText(getContext(), "Veuillez vous connecter pour liker un post", Toast.LENGTH_SHORT).show();
-                } else {
+                if (!currentUserId.isEmpty()) {
                     postViewModel.toggleLike(post, currentUserId);
                 }
             }
-            @Override public void onCommentClick(Post post) {
-                onPostClick(post);
-            }
+            @Override public void onCommentClick(Post post) { onPostClick(post); }
         });
-        recyclerPubs.setAdapter(postAdapter);
+        recyclerPublications.setAdapter(postAdapter);
 
-        recyclerGrps.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerGroups.setLayoutManager(new LinearLayoutManager(getContext()));
         groupAdapter = new GroupAdapter(group -> {
             groupViewModel.selectGroup(group);
             Navigation.findNavController(view).navigate(R.id.action_global_to_groupDetailFragment);
         });
-        recyclerGrps.setAdapter(groupAdapter);
+        recyclerGroups.setAdapter(groupAdapter);
+
+        recyclerParcours.setLayoutManager(new LinearLayoutManager(getContext()));
+        parcoursAdapter = new ParcoursAdapter(new ArrayList<>(), parcours -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("PARCOURS_SELECTIONNE", parcours);
+            Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_resultatFragment, bundle);
+        });
+        recyclerParcours.setAdapter(parcoursAdapter);
     }
 
-    private void setupObservers(TextView pseudo, TextView desc, ImageView pic, TextView pubs, TextView grps, TextView likes) {
+    private void setupObservers() {
         userViewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
-                pseudo.setText(user.getPseudo());
-                desc.setText(user.getDescription());
-
-                countPubs.setText(String.valueOf(user.getNbPublications()));
-                countLikes.setText(String.valueOf(user.getNbLikes()));
+                profilPseudo.setText(user.getPseudo());
+                profilDesc.setText(user.getDescription());
                 countGroups.setText(String.valueOf(user.getNbGroups()));
-
                 String url = user.getProfilePictureUrl();
                 Glide.with(this)
                         .load(url != null && !url.trim().isEmpty() ? url : null)
                         .placeholder(R.drawable.default_user)
                         .error(R.drawable.default_user)
                         .circleCrop()
-                        .into(pic);
+                        .into(profilPicture);
             }
         });
 
         postViewModel.getUserPosts().observe(getViewLifecycleOwner(), posts -> {
             if (posts != null) {
-                FirebaseUser currentUser = authViewModel.getCurrentUser();
-                String currentUserId = (currentUser != null) ? currentUser.getUid() : "";
-                String visitedUserId = (getArguments() != null) ? getArguments().getString("userId") : currentUserId;
-                boolean isMyProfile = !currentUserId.isEmpty() && visitedUserId.equals(currentUserId);
-
-                java.util.List<Post> displayedPosts = new java.util.ArrayList<>();
-                int totalLikes = 0;
-
-                for (Post post : posts) {
-                    if (isMyProfile || post.isPublic()) {
-                        displayedPosts.add(post);
-                        totalLikes += post.getLikesCount();
-                    }
-                }
-
-                postAdapter.setPosts(displayedPosts);
-
-                pubs.setText(String.valueOf(displayedPosts.size()));
-                likes.setText(String.valueOf(totalLikes));
-
-            } else {
-                pubs.setText("0");
-                likes.setText("0");
+                postAdapter.setPosts(posts);
+                countPubs.setText(String.valueOf(posts.size()));
+                int likes = 0;
+                for(Post p : posts) likes += p.getLikesCount();
+                countLikes.setText(String.valueOf(likes));
             }
         });
+
         userViewModel.getUserGroup().observe(getViewLifecycleOwner(), groups -> {
             if (groups != null) {
                 groupAdapter.setGroups(groups);
-                grps.setText(String.valueOf(groups.size()));
-            } else {
-                grps.setText("0");
+                countGroups.setText(String.valueOf(groups.size()));
+            }
+        });
+
+        userViewModel.getUserParcours().observe(getViewLifecycleOwner(), parcours -> {
+            if (parcours != null) {
+                parcoursAdapter.setParcoursList(parcours);
+                if (countParcours != null) countParcours.setText(String.valueOf(parcours.size()));
             }
         });
 
         userViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
-            if (error != null) Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-        });
-
-        postViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null) Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
         });
     }
