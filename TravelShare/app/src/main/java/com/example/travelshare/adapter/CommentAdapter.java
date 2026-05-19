@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
 
@@ -27,11 +28,13 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private List<Comment> commentList = new ArrayList<>();
     private final OnCommentClickListener listener;
     private final String currentUserId;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE);
+    private final SimpleDateFormat dateFormat;
 
     public CommentAdapter(String currentUserId, OnCommentClickListener listener) {
         this.currentUserId = currentUserId;
         this.listener = listener;
+        this.dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE);
+        this.dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
     }
 
     public void setComments(List<Comment> comments) {

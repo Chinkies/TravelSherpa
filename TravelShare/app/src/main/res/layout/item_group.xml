@@ -41,27 +41,27 @@
             android:id="@+id/group_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginTop="2dp"
             android:text="Il y a 2 heures"
             android:textColor="#757575"
             android:textSize="12sp"
             tools:text="Il y a 5 heures"
-            app:layout_constraintBottom_toBottomOf="@+id/group_name"
-            app:layout_constraintStart_toEndOf="@+id/group_name"
-            app:layout_constraintTop_toTopOf="@+id/group_name" />
+            app:layout_constraintStart_toStartOf="@+id/group_name"
+            app:layout_constraintTop_toBottomOf="@+id/group_name" />
 
         <TextView
             android:id="@+id/group_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="12dp"
             android:layout_marginBottom="4dp"
             android:text="C'était un voyage magnifique au bor..."
             tools:text="C'était un voyage magnifique au bor..."
-            app:layout_constraintBottom_toBottomOf="@+id/group_profil_picture"
             app:layout_constraintEnd_toStartOf="@+id/btn_group"
             app:layout_constraintStart_toStartOf="@+id/group_name"
-            app:layout_constraintTop_toBottomOf="@+id/group_name" />
+            app:layout_constraintTop_toBottomOf="@+id/group_date"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <ImageButton
             android:id="@+id/btn_group"

@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder> {
 
@@ -70,6 +71,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
             Date = itemView.findViewById(R.id.group_date);
             Description = itemView.findViewById(R.id.group_description);
             dateFormat = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm", Locale.FRANCE);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
         }
 
         public void bind(Group group, OnGroupClickListener listener) {

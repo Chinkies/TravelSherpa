@@ -1,6 +1,5 @@
 package com.example.travelshare.adapter;
 
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +13,17 @@ import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.model.Notification;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     private List<Notification> notifications = new ArrayList<>();
     private final OnNotificationClickListener listener;
+    private final SimpleDateFormat dateFormat;
 
     public interface OnNotificationClickListener {
         void onNotificationClick(Notification notification);
@@ -28,6 +31,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     public NotificationAdapter(OnNotificationClickListener listener) {
         this.listener = listener;
+        this.dateFormat = new SimpleDateFormat("dd/MM HH:mm", Locale.FRANCE);
+        this.dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
     }
 
     public void setNotifications(List<Notification> notifications) {
@@ -45,7 +50,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         Notification notification = notifications.get(position);
-        holder.bind(notification, listener);
+        holder.bind(notification, listener, dateFormat);
     }
 
     @Override
@@ -67,11 +72,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             unreadIndicator = itemView.findViewById(R.id.notification_unread_indicator);
         }
 
-        public void bind(Notification notification, OnNotificationClickListener listener) {
+        public void bind(Notification notification, OnNotificationClickListener listener, SimpleDateFormat dateFormat) {
             message.setText(notification.getMessage());
             
             if (notification.getTimestamp() != null) {
-                time.setText(DateUtils.getRelativeTimeSpanString(notification.getTimestamp().getTime()));
+                time.setText(dateFormat.format(notification.getTimestamp()));
             }
 
             unreadIndicator.setVisibility(notification.isRead() ? View.GONE : View.VISIBLE);

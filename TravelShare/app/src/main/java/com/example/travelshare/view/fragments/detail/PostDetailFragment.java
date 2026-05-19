@@ -37,6 +37,7 @@ import com.google.android.material.button.MaterialButton;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class PostDetailFragment extends Fragment {
 
@@ -198,6 +199,7 @@ public class PostDetailFragment extends Fragment {
         if (currentPost == null) return;
 
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.FRANCE);
+        timeFormat.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
 
         pseudo.setText(currentPost.getAuthorName());
         description.setText(currentPost.getDescription());

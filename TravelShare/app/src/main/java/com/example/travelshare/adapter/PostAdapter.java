@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
 
@@ -32,11 +33,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     private List<Post> postList = new ArrayList<>();
     private final OnPostClickListener listener;
     private String currentUser;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.FRANCE);
+    private final SimpleDateFormat dateFormat;
 
     public PostAdapter(String currentUser, OnPostClickListener listener){
         this.currentUser = currentUser;
         this.listener = listener;
+        this.dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.FRANCE);
+        this.dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
     }
 
     public void setPosts(List<Post> posts) {
