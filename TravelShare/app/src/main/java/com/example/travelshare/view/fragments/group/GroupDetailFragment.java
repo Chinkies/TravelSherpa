@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.travelshare.R;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
+import com.example.travelshare.model.User;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.GroupViewModel;
 import com.example.travelshare.viewmodel.PostViewModel;
@@ -87,9 +88,11 @@ public class GroupDetailFragment extends Fragment {
 
             @Override
             public void onLikeClick(Post post) {
-                if (userViewModel.getSelectedUser().getValue() != null) {
-                    String userId = userViewModel.getSelectedUser().getValue().getId();
-                    postViewModel.toggleLike(post, userId);
+                User currentUser = userViewModel.getCurrentUser().getValue();
+                if (currentUser != null) {
+                    postViewModel.toggleLike(post, currentUser);
+                } else {
+                    Toast.makeText(getContext(), "Veuillez patienter...", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -100,7 +103,7 @@ public class GroupDetailFragment extends Fragment {
         });
         recyclerView.setAdapter(postAdapter);
 
-        userViewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
+        userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 postAdapter.updateUserId(user.getId());
             }

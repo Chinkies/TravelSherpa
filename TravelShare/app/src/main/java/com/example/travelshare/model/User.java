@@ -15,6 +15,9 @@ public class User {
     private int nbLikes;
     
     private List<String> favoriteLieuIds;
+    private List<String> followedUserIds;
+    private List<String> followedGroupIds;
+    private List<String> followedTags;
 
     public User() {}
 
@@ -27,6 +30,9 @@ public class User {
         this.nbGroups = nbGroups;
         this.nbLikes = nbLikes;
         this.favoriteLieuIds = new ArrayList<>();
+        this.followedUserIds = new ArrayList<>();
+        this.followedGroupIds = new ArrayList<>();
+        this.followedTags = new ArrayList<>();
     }
 
     public String getId() { return id; }
@@ -37,6 +43,9 @@ public class User {
     public int getNbGroups() { return nbGroups; }
     public int getNbLikes() { return nbLikes; }
     public List<String> getFavoriteLieuIds() { return favoriteLieuIds != null ? favoriteLieuIds : new ArrayList<>(); }
+    public List<String> getFollowedUserIds() { return followedUserIds != null ? followedUserIds : new ArrayList<>(); }
+    public List<String> getFollowedGroupIds() { return followedGroupIds != null ? followedGroupIds : new ArrayList<>(); }
+    public List<String> getFollowedTags() { return followedTags != null ? followedTags : new ArrayList<>(); }
 
     public void setId(String id) { this.id = id; }
     public void setPseudo(String pseudo) { this.pseudo = pseudo; }
@@ -46,6 +55,9 @@ public class User {
     public void setNbGroups(int nbGroups) { this.nbGroups = nbGroups; }
     public void setNbLikes(int nbLikes) { this.nbLikes = nbLikes; }
     public void setFavoriteLieuIds(List<String> favoriteLieuIds) { this.favoriteLieuIds = favoriteLieuIds; }
+    public void setFollowedUserIds(List<String> followedUserIds) { this.followedUserIds = followedUserIds; }
+    public void setFollowedGroupIds(List<String> followedGroupIds) { this.followedGroupIds = followedGroupIds; }
+    public void setFollowedTags(List<String> followedTags) { this.followedTags = followedTags; }
 
     @Override
     public boolean equals(Object o) {

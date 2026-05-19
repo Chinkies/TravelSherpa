@@ -45,6 +45,17 @@
                     app:layout_constraintStart_toEndOf="@+id/profil_picture"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <ImageButton
+                    android:id="@+id/profile_btn_settings"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/settings"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="#757575" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView

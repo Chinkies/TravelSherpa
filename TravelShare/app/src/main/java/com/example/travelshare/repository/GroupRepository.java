@@ -31,6 +31,21 @@ public class GroupRepository {
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
+    public void fetchGroupsFromIds(List<String> ids, FireStoreCallBack<List<Group>> callback) {
+        if (ids == null || ids.isEmpty()) {
+            callback.onSuccess(new ArrayList<>());
+            return;
+        }
+
+        db.collection(COLLECTION_GROUPS)
+                .whereIn("id", ids)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    callback.onSuccess(queryDocumentSnapshots.toObjects(Group.class));
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
     public void joinGroup(String groupId, String userId, FireStoreCallBack<Void> callback) {
         DocumentReference groupRef = db.collection(COLLECTION_GROUPS).document(groupId);
 

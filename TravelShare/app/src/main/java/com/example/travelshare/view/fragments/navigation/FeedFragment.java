@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.travelshare.R;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
+import com.example.travelshare.model.User;
 import com.example.travelshare.viewmodel.PostViewModel;
 import com.example.travelshare.viewmodel.UserViewModel;
 
@@ -68,9 +69,9 @@ public class FeedFragment extends Fragment {
 
             @Override
             public void onLikeClick(Post post) {
-                String userId = userViewModel.getSelectedUser().getValue().getId();
-                if (userId != null) {
-                    postViewModel.toggleLike(post, userId);
+                User currentUser = userViewModel.getCurrentUser().getValue();
+                if (currentUser != null) {
+                    postViewModel.toggleLike(post, currentUser);
                 }
             }
 
@@ -83,9 +84,8 @@ public class FeedFragment extends Fragment {
         recyclerView.setAdapter(postAdapter);
 
         ProgressBar progressBar = view.findViewById(R.id.feed_progress_bar);
-        postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
 
-        userViewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
+        userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 postAdapter.updateUserId(user.getId());
             }

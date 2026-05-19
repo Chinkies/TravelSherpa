@@ -81,14 +81,12 @@ public class PostDetailFragment extends Fragment {
             }
         });
 
-        setupRecyclerView(view);
-
         commentViewModel.getComment().observe(getViewLifecycleOwner(), allComments -> {
             if (allComments != null) {
                 commentAdapter.setComments(allComments);
                 comments.setText(allComments.size() + " commentaires");
 
-                if (userViewModel.getSelectedUser().getValue() != null && currentPost != null) {
+                if (userViewModel.getCurrentUser().getValue() != null && currentPost != null) {
                     postViewModel.updatePostCommentCount(currentPost.getId(), allComments.size());
                 }
             }
@@ -139,9 +137,9 @@ public class PostDetailFragment extends Fragment {
         });
 
         view.findViewById(R.id.post_detail_btn_like).setOnClickListener(v -> {
-            User currentUser = userViewModel.getSelectedUser().getValue();
+            User currentUser = userViewModel.getCurrentUser().getValue();
             if (currentUser != null && currentPost != null) {
-                postViewModel.toggleLike(currentPost, currentUser.getId());
+                postViewModel.toggleLike(currentPost, currentUser);
             }
         });
 
@@ -155,6 +153,10 @@ public class PostDetailFragment extends Fragment {
             if (currentPost != null) {
                 Bundle bundle = new Bundle();
                 
+                if (currentPost.getLieuId() != null) {
+                    bundle.putString("LIEU_ID", currentPost.getLieuId());
+                }
+
                 if (currentPost.getLocation() != null) {
                     bundle.putDouble("LATITUDE", currentPost.getLocation().getLatitude());
                     bundle.putDouble("LONGITUDE", currentPost.getLocation().getLongitude());
@@ -182,6 +184,8 @@ public class PostDetailFragment extends Fragment {
                 navController.navigate(R.id.preferenceFragment, bundle, navOptions);
             }
         });
+
+        setupRecyclerView(view);
     }
 
     private void bindPostData() {
@@ -215,7 +219,7 @@ public class PostDetailFragment extends Fragment {
         Glide.with(this).load(currentPost.getAuthorProfilPictureUrl())
                 .placeholder(R.drawable.default_user).circleCrop().into(imgProfil);
 
-        User currentUser = userViewModel.getSelectedUser().getValue();
+        User currentUser = userViewModel.getCurrentUser().getValue();
         ImageButton btnLike = getView().findViewById(R.id.post_detail_btn_like);
 
         if (currentUser != null && currentPost.getLikers() != null && currentPost.getLikers().contains(currentUser.getId())) {
@@ -236,7 +240,7 @@ public class PostDetailFragment extends Fragment {
         if (currentPost == null) return;
         String text = inputComment.getText().toString().trim();
         if (text.isEmpty()) return;
-        User currentUser = userViewModel.getSelectedUser().getValue();
+        User currentUser = userViewModel.getCurrentUser().getValue();
         if (currentUser == null) {
             Toast.makeText(getContext(), "Veuillez vous connecter pour commenter", Toast.LENGTH_SHORT).show();
             return;
@@ -249,7 +253,7 @@ public class PostDetailFragment extends Fragment {
                 text,
                 currentUser.getProfilePictureUrl()
         );
-        commentViewModel.addComment(newComment);
+        commentViewModel.addComment(newComment, currentPost, currentUser);
         inputComment.setText("");
         btnSend.setEnabled(true);
     }

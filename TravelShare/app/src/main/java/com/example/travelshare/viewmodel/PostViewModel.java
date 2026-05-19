@@ -10,10 +10,12 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.travelshare.model.Lieu;
+import com.example.travelshare.model.Notification;
 import com.example.travelshare.model.Post;
 import com.example.travelshare.repository.AuthRespository;
 import com.example.travelshare.repository.FireStoreCallBack;
 import com.example.travelshare.repository.LieuRepository;
+import com.example.travelshare.repository.NotificationRepository;
 import com.example.travelshare.repository.PostRepository;
 import com.example.travelshare.repository.StorageRepository;
 import com.google.firebase.firestore.GeoPoint;
@@ -27,6 +29,7 @@ public class PostViewModel extends ViewModel {
     private final LieuRepository lieuRepository = new LieuRepository();
     private final StorageRepository storageRepository = new StorageRepository();
     private final AuthRespository authRespository = new AuthRespository();
+    private final NotificationRepository notificationRepository = new NotificationRepository();
 
     private MutableLiveData<List<Post>> posts = new MutableLiveData<>();
     private MutableLiveData<List<Post>> groupPost = new MutableLiveData<>();
@@ -221,12 +224,35 @@ public class PostViewModel extends ViewModel {
 
     public void resetPostCreated() { postCreated.setValue(false); }
 
-    public void toggleLike(Post post, String userId) {
-        if (userId == null) return;
+    public void toggleLike(Post post, com.example.travelshare.model.User currentUser) {
+        if (currentUser == null) return;
+        String userId = currentUser.getId();
         if (post.getLikers() == null) post.setLikers(new ArrayList<>());
         boolean alreadyLiked = post.getLikers().contains(userId);
-        if (alreadyLiked) { post.getLikers().remove(userId); post.setLikesCount(post.getLikesCount() - 1); }
-        else { post.getLikers().add(userId); post.setLikesCount(post.getLikesCount() + 1); }
+        if (alreadyLiked) {
+            post.getLikers().remove(userId);
+            post.setLikesCount(post.getLikesCount() - 1);
+        } else {
+            post.getLikers().add(userId);
+            post.setLikesCount(post.getLikesCount() + 1);
+            
+            // Envoyer une notification au créateur du post (si ce n'est pas nous-même)
+            if (!post.getAuthorId().equals(userId)) {
+                Notification notif = new Notification(
+                        post.getAuthorId(),
+                        userId,
+                        currentUser.getPseudo(),
+                        currentUser.getProfilePictureUrl(),
+                        "LIKE",
+                        post.getId(),
+                        currentUser.getPseudo() + " a aimé votre publication"
+                );
+                notificationRepository.createNotification(notif, new FireStoreCallBack<String>() {
+                    @Override public void onSuccess(String result) {}
+                    @Override public void onFailure(String e) {}
+                });
+            }
+        }
         selectedPost.setValue(post);
         postRepository.toggleLike(post, userId, !alreadyLiked, new FireStoreCallBack<Void>() {
             @Override public void onSuccess(Void result) {}

@@ -72,16 +72,25 @@ public class UserRepository {
     }
 
     public void toggleFavoriteLieu(String userId, String lieuId, boolean isAdd, FireStoreCallBack<Void> callback) {
-        if (isAdd) {
-            db.collection(COLLECTION_USERS).document(userId)
-                    .update("favoriteLieuIds", FieldValue.arrayUnion(lieuId))
-                    .addOnSuccessListener(aVoid -> callback.onSuccess(null))
-                    .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
-        } else {
-            db.collection(COLLECTION_USERS).document(userId)
-                    .update("favoriteLieuIds", FieldValue.arrayRemove(lieuId))
-                    .addOnSuccessListener(aVoid -> callback.onSuccess(null))
-                    .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
-        }
+        updateListField(userId, "favoriteLieuIds", lieuId, isAdd, callback);
+    }
+
+    public void toggleFollowedUser(String userId, String targetUserId, boolean isFollow, FireStoreCallBack<Void> callback) {
+        updateListField(userId, "followedUserIds", targetUserId, isFollow, callback);
+    }
+
+    public void toggleFollowedGroup(String userId, String groupId, boolean isFollow, FireStoreCallBack<Void> callback) {
+        updateListField(userId, "followedGroupIds", groupId, isFollow, callback);
+    }
+
+    public void toggleFollowedTag(String userId, String tag, boolean isFollow, FireStoreCallBack<Void> callback) {
+        updateListField(userId, "followedTags", tag, isFollow, callback);
+    }
+
+    private void updateListField(String userId, String fieldName, Object value, boolean isAdd, FireStoreCallBack<Void> callback) {
+        db.collection(COLLECTION_USERS).document(userId)
+                .update(fieldName, isAdd ? FieldValue.arrayUnion(value) : FieldValue.arrayRemove(value))
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 }

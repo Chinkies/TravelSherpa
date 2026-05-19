@@ -15,11 +15,13 @@ import android.widget.Toast;
 
 import com.example.travelshare.R;
 import com.example.travelshare.viewmodel.AuthViewModel;
+import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class AuthFragment extends Fragment {
 
     private AuthViewModel authViewModel;
+    private UserViewModel userViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -31,12 +33,15 @@ public class AuthFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         TextInputEditText inputEmail = view.findViewById(R.id.auth_text_email_input);
         TextInputEditText inputPassword = view.findViewById(R.id.auth_password_input);
 
-        authViewModel.getUser().observe(getViewLifecycleOwner(), firebaseUser -> {
-            if (firebaseUser != null) {
+        // On n'observe plus authViewModel.getUser() pour quitter l'écran, 
+        // on attend que le profil Firestore soit chargé via UserViewModel
+        userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
                 Toast.makeText(getContext(), "Connexion réussie !", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(view).popBackStack();
             }

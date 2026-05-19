@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ import com.example.travelshare.R;
 import com.example.travelshare.adapter.GroupAdapter;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
+import com.example.travelshare.model.User;
 import com.example.travelshare.travelpath.adapter.ParcoursAdapter;
 import com.example.travelshare.utils.NavigationUtils;
 import com.example.travelshare.viewmodel.AuthViewModel;
@@ -39,6 +41,7 @@ public class ProfileFragment extends Fragment {
     private TextView profilPseudo, profilDesc, countPubs,
         countGroups, countLikes, countParcours;
     private Button btnAction;
+    private ImageButton btnSettings;
     private RadioGroup radioGroup;
     private RecyclerView recyclerPublications, recyclerGroups, recyclerParcours;
 
@@ -84,6 +87,7 @@ public class ProfileFragment extends Fragment {
         countLikes = view.findViewById(R.id.profile_count_likes);
         countParcours = view.findViewById(R.id.profile_count_parcours);
         btnAction = view.findViewById(R.id.button_modification);
+        btnSettings = view.findViewById(R.id.profile_btn_settings);
         radioGroup = view.findViewById(R.id.radio_group);
         recyclerPublications = view.findViewById(R.id.recycler_publications);
         recyclerGroups = view.findViewById(R.id.recycler_groups);
@@ -99,6 +103,7 @@ public class ProfileFragment extends Fragment {
         if (isMyProfile) {
             btnAction.setText("Modifier le profil");
             btnAction.setVisibility(View.VISIBLE);
+            btnSettings.setVisibility(View.VISIBLE);
             view.findViewById(R.id.profile_btn_logout).setVisibility(View.VISIBLE);
 
             btnAction.setOnClickListener(v -> {
@@ -107,8 +112,13 @@ public class ProfileFragment extends Fragment {
                 bundle.putString("currentDesc", profilDesc.getText().toString());
                 Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_profileEditFragment, bundle);
             });
+
+            btnSettings.setOnClickListener(v -> {
+                Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_notificationSettingsFragment);
+            });
         } else {
             btnAction.setVisibility(View.GONE);
+            btnSettings.setVisibility(View.GONE);
             view.findViewById(R.id.profile_btn_logout).setVisibility(View.GONE);
         }
 
@@ -147,7 +157,6 @@ public class ProfileFragment extends Fragment {
                 postViewModel.selectPost(post);
                 Bundle b = new Bundle();
                 b.putString("postId", post.getId());
-                // Utilisation de l'action locale pour corriger l'erreur de compilation
                 Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_postDetailFragment, b);
             }
             @Override public void onProfileClick(String id) { }
@@ -155,8 +164,9 @@ public class ProfileFragment extends Fragment {
                 NavigationUtils.showPostMenu(requireContext(), v, post);
             }
             @Override public void onLikeClick(Post post) {
-                if (!currentUserId.isEmpty()) {
-                    postViewModel.toggleLike(post, currentUserId);
+                User currentUser = userViewModel.getCurrentUser().getValue();
+                if (currentUser != null) {
+                    postViewModel.toggleLike(post, currentUser);
                 }
             }
             @Override public void onCommentClick(Post post) { onPostClick(post); }
@@ -173,7 +183,7 @@ public class ProfileFragment extends Fragment {
         recyclerParcours.setLayoutManager(new LinearLayoutManager(getContext()));
         parcoursAdapter = new ParcoursAdapter(new ArrayList<>(), parcours -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("parcours", parcours); // Clé changée de "PARCOURS_SELECTIONNE" à "parcours"
+            bundle.putSerializable("parcours", parcours);
             Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_resultatFragment, bundle);
         });
         recyclerParcours.setAdapter(parcoursAdapter);

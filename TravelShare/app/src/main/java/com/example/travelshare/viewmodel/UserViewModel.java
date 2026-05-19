@@ -27,7 +27,6 @@ public class UserViewModel extends ViewModel {
     private final PostRepository postRepository = new PostRepository();
     private final GroupRepository groupRepository = new GroupRepository();
     private final StorageRepository storageRepository = new StorageRepository();
-
     private final ParcoursRepository parcoursRepository = new ParcoursRepository();
 
     private final MutableLiveData<User> currentUser = new MutableLiveData<>();
@@ -104,12 +103,39 @@ public class UserViewModel extends ViewModel {
                 userParcoursData.postValue(parcoursList);
                 isLoading.postValue(false);
             }
-
             @Override
             public void onFailure(String e) {
                 errorMessage.postValue(e);
                 isLoading.postValue(false);
             }
+        });
+    }
+
+    public void toggleFollowUser(String userId, String targetUserId, boolean isFollow) {
+        userRepository.toggleFollowedUser(userId, targetUserId, isFollow, new FireStoreCallBack<Void>() {
+            @Override public void onSuccess(Void result) { loadCurrentUser(userId); }
+            @Override public void onFailure(String e) { errorMessage.postValue(e); }
+        });
+    }
+
+    public void toggleFollowGroup(String userId, String groupId, boolean isFollow) {
+        userRepository.toggleFollowedGroup(userId, groupId, isFollow, new FireStoreCallBack<Void>() {
+            @Override public void onSuccess(Void result) { loadCurrentUser(userId); }
+            @Override public void onFailure(String e) { errorMessage.postValue(e); }
+        });
+    }
+
+    public void toggleFollowTag(String userId, String tag, boolean isFollow) {
+        userRepository.toggleFollowedTag(userId, tag, isFollow, new FireStoreCallBack<Void>() {
+            @Override public void onSuccess(Void result) { loadCurrentUser(userId); }
+            @Override public void onFailure(String e) { errorMessage.postValue(e); }
+        });
+    }
+
+    public void toggleFavoriteLieu(String userId, String lieuId, boolean isAdd) {
+        userRepository.toggleFavoriteLieu(userId, lieuId, isAdd, new FireStoreCallBack<Void>() {
+            @Override public void onSuccess(Void result) { loadCurrentUser(userId); }
+            @Override public void onFailure(String e) { errorMessage.postValue(e); }
         });
     }
 

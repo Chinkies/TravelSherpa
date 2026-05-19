@@ -34,8 +34,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.travelshare.R;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
+import com.example.travelshare.model.User;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.PostViewModel;
+import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputEditText;
@@ -65,6 +67,7 @@ public class SearchFragment extends Fragment {
 
     private PostViewModel postViewModel;
     private AuthViewModel authViewModel;
+    private UserViewModel userViewModel;
     private PostAdapter postAdapter;
 
     private List<Post> loadedPosts = new ArrayList<>();
@@ -100,6 +103,7 @@ public class SearchFragment extends Fragment {
 
         postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         initViews(view);
         setupRecyclerView(view);
@@ -148,8 +152,9 @@ public class SearchFragment extends Fragment {
             }
             @Override public void onMoreClick(View v, Post post) { showPostMenu(requireContext(), view, post); }
             @Override public void onLikeClick(Post post) {
-                if (currentUserId.isEmpty()) Toast.makeText(getContext(), "Veuillez vous connecter pour liker", Toast.LENGTH_SHORT).show();
-                else postViewModel.toggleLike(post, currentUserId);
+                User user = userViewModel.getCurrentUser().getValue();
+                if (user == null) Toast.makeText(getContext(), "Veuillez vous connecter pour liker", Toast.LENGTH_SHORT).show();
+                else postViewModel.toggleLike(post, user);
             }
             @Override public void onCommentClick(Post post) { onPostClick(post); }
         });
@@ -204,6 +209,12 @@ public class SearchFragment extends Fragment {
                 chipGroupTags.removeAllViews();
                 addChipToGroup("Tout", true);
                 for (String tag : tags) addChipToGroup(tag, false);
+            }
+        });
+
+        userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null && postAdapter != null) {
+                postAdapter.updateUserId(user.getId());
             }
         });
     }

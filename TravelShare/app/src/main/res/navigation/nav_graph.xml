@@ -98,6 +98,9 @@
         <action
             android:id="@+id/action_profileFragment_to_resultatFragment"
             app:destination="@id/resultatFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_notificationSettingsFragment"
+            app:destination="@id/notificationSettingsFragment" />
     </fragment>
 
     <fragment
@@ -148,5 +151,11 @@
         android:name="com.example.travelshare.view.fragments.group.GroupGestionFragment"
         android:label="Gérer le groupe"
         tools:layout="@layout/fragment_group_gestion" />
+
+    <fragment
+        android:id="@+id/notificationSettingsFragment"
+        android:name="com.example.travelshare.view.fragments.navigation.NotificationSettingsFragment"
+        android:label="Paramètres de notification"
+        tools:layout="@layout/fragment_notification_settings" />
 
 </navigation>

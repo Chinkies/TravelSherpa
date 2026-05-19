@@ -1,16 +1,22 @@
 package com.example.travelshare.view;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -32,6 +38,14 @@ public class MainActivity extends AppCompatActivity {
     private UserViewModel userViewModel;
     private boolean isUserLogged = false;
     private User currentUserProfile = null;
+
+    // Launcher pour la demande de permission de notifications (Android 13+)
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (!isGranted) {
+                    Toast.makeText(this, "Les notifications sont désactivées. Vous ne recevrez pas d'alertes en temps réel.", Toast.LENGTH_LONG).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 userViewModel.loadCurrentUser(firebaseUser.getUid());
             } else {
                 isUserLogged = false;
+                currentUserProfile = null;
                 userViewModel.clearUserData();
                 invalidateOptionsMenu();
             }
@@ -77,6 +92,26 @@ public class MainActivity extends AppCompatActivity {
                 invalidateOptionsMenu();
             }
         });
+
+        // Détection d'un compte Auth sans profil Firestore (cas de clean DB)
+        userViewModel.getErrorMessage().observe(this, error -> {
+            if ("Utilisateur introuvable".equals(error)) {
+                authViewModel.logout();
+                userViewModel.clearError();
+                Toast.makeText(this, "Profil introuvable, veuillez vous reconnecter", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        askNotificationPermission();
+    }
+
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 
     @Override
