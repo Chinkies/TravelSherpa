@@ -90,14 +90,30 @@ public class ListeParcoursFragment extends Fragment {
 
             double latTemp = 48.8529;
             double lonTemp = 2.3499;
-            try {
-                Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-                List<Address> addresses = geocoder.getFromLocationName(prefs.getVille(), 1);
-                if (addresses != null && !addresses.isEmpty()) {
-                    latTemp = addresses.get(0).getLatitude();
-                    lonTemp = addresses.get(0).getLongitude();
-                }
-            } catch (Exception e) { e.printStackTrace(); }
+            boolean coordsParsed = false;
+
+            // Tentative de lecture directe si format "lat, lon"
+            if (prefs.getVille().contains(",")) {
+                try {
+                    String[] parts = prefs.getVille().split(",");
+                    if (parts.length == 2) {
+                        latTemp = Double.parseDouble(parts[0].trim());
+                        lonTemp = Double.parseDouble(parts[1].trim());
+                        coordsParsed = true;
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            if (!coordsParsed) {
+                try {
+                    Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+                    List<Address> addresses = geocoder.getFromLocationName(prefs.getVille(), 1);
+                    if (addresses != null && !addresses.isEmpty()) {
+                        latTemp = addresses.get(0).getLatitude();
+                        lonTemp = addresses.get(0).getLongitude();
+                    }
+                } catch (Exception e) { e.printStackTrace(); }
+            }
 
             final double finalLat = latTemp;
             final double finalLon = lonTemp;

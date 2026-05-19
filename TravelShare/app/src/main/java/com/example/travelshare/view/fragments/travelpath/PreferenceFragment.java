@@ -81,6 +81,8 @@ public class PreferenceFragment extends Fragment {
             if (getArguments().containsKey("LATITUDE") && getArguments().containsKey("LONGITUDE")) {
                 double lat = getArguments().getDouble("LATITUDE");
                 double lng = getArguments().getDouble("LONGITUDE");
+                String coords = String.format(Locale.US, "%.5f, %.5f", lat, lng);
+                editVille.setText(coords);
                 reverseGeocode(lat, lng);
             }
 
@@ -107,7 +109,7 @@ public class PreferenceFragment extends Fragment {
                 if (searchRunnable != null) searchHandler.removeCallbacks(searchRunnable);
                 
                 searchRunnable = () -> {
-                    if (ville.length() >= 3) {
+                    if (ville.length() >= 3 && !ville.contains(",")) {
                         chargerImageVille(ville);
                     }
                 };
@@ -129,8 +131,10 @@ public class PreferenceFragment extends Fragment {
                 if (addresses != null && !addresses.isEmpty()) {
                     String city = addresses.get(0).getLocality();
                     new Handler(Looper.getMainLooper()).post(() -> {
-                        if (isAdded() && editVille != null && city != null) {
-                            editVille.setText(city);
+                        if (isAdded() && city != null) {
+                            // On ne change pas le texte si c'est déjà des coordonnées
+                            // mais on charge l'image de la ville trouvée
+                            chargerImageVille(city);
                         }
                     });
                 }
