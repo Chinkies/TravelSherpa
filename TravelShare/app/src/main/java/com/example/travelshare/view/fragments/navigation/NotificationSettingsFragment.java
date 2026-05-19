@@ -86,14 +86,9 @@ public class NotificationSettingsFragment extends Fragment {
     }
 
     private void setupFollowedLists() {
-        // Pour simplifier l'implémentation dans le cadre de cet exercice,
-        // on pourrait créer des adaptateurs génériques ou utiliser des TextView dynamiques.
-        // Ici, on va juste observer les données de l'utilisateur.
         
         userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
-                // Mise à jour des listes si nécessaire
-                // (L'implémentation complète nécessiterait de charger les objets User/Group/Lieu correspondant aux IDs)
             }
         });
         

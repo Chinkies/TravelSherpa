@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isUserLogged = false;
     private User currentUserProfile = null;
 
-    // Launcher pour la demande de permission de notifications (Android 13+)
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (!isGranted) {
@@ -66,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_bar);
 
-        // On retire notificationsFragment des destinations de premier niveau pour avoir la flèche de retour
         appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.feedFragment, R.id.searchFragment, R.id.groupsFragment, 
                 R.id.publishFragment, R.id.preferenceFragment)
@@ -94,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Détection d'un compte Auth sans profil Firestore (cas de clean DB)
         userViewModel.getErrorMessage().observe(this, error -> {
             if ("Utilisateur introuvable".equals(error)) {
                 authViewModel.logout();

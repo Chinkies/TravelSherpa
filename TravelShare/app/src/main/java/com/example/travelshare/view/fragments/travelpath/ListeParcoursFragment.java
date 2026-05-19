@@ -92,7 +92,6 @@ public class ListeParcoursFragment extends Fragment {
             double lonTemp = 2.3499;
             boolean coordsParsed = false;
 
-            // Tentative de lecture directe si format "lat, lon"
             if (prefs.getVille().contains(",")) {
                 try {
                     String[] parts = prefs.getVille().split(",");

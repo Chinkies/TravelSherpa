@@ -66,7 +66,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.Pseudo.setText(currentPost.getAuthorName());
         holder.Description.setText(currentPost.getDescription());
 
-        // Mise à jour de l'UI (Compteurs et état du Like)
         updateLikesUI(holder, currentPost);
         holder.countComments.setText(currentPost.getCommentCount() + " commentaire" + (currentPost.getCommentCount() > 1 ? "s" : ""));
 
@@ -103,7 +102,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             if (currentUser != null) {
                 boolean isLiked = currentPost.getLikers() != null && currentPost.getLikers().contains(currentUser);
                 
-                // Retour visuel immédiat (Optimiste)
                 if (!isLiked) {
                     holder.btnLikes.setColorFilter(Color.RED);
                     animateHeart(holder.btnLikes);

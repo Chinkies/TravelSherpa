@@ -105,8 +105,7 @@ public class PostViewModel extends ViewModel {
             final GeoPoint finalGeo = geoPoint;
             new Handler(Looper.getMainLooper()).post(() -> {
                 post.setLocation(finalGeo);
-                // On sauvegarde l'adresse textuelle dans le post pour faciliter la recherche
-                post.setIndication(address); 
+                post.setIndication(address);
 
                 if (finalGeo != null) {
                     String lieuId = "USER_PLACE_" + System.currentTimeMillis();
@@ -252,7 +251,6 @@ public class PostViewModel extends ViewModel {
             post.getLikers().add(userId);
             post.setLikesCount(post.getLikesCount() + 1);
             
-            // Envoyer une notification au créateur du post (si ce n'est pas nous-même)
             if (!post.getAuthorId().equals(userId)) {
                 Notification notif = new Notification(
                         post.getAuthorId(),
@@ -270,7 +268,6 @@ public class PostViewModel extends ViewModel {
             }
         }
         
-        // Mise à jour de toutes les listes LiveData pour forcer le rafraîchissement UI
         notifyPostChanged(post);
         
         postRepository.toggleLike(post, userId, !alreadyLiked, new FireStoreCallBack<Void>() {
@@ -279,9 +276,6 @@ public class PostViewModel extends ViewModel {
         });
     }
 
-    /**
-     * Notifie tous les observateurs qu'un post a été modifié.
-     */
     private void notifyPostChanged(Post updatedPost) {
         if (selectedPost.getValue() != null && selectedPost.getValue().getId().equals(updatedPost.getId())) {
             selectedPost.setValue(updatedPost);
@@ -314,7 +308,6 @@ public class PostViewModel extends ViewModel {
         postRepository.deletePost(post.getId(), new FireStoreCallBack<Void>() {
             @Override
             public void onSuccess(Void result) {
-                // Supprimer l'image sur ImgBB si l'URL de suppression est présente
                 if (post.getImageDeleteUrl() != null && !post.getImageDeleteUrl().isEmpty()) {
                     storageRepository.deleteImage(post.getImageDeleteUrl());
                 }

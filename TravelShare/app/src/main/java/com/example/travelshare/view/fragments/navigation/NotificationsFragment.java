@@ -34,7 +34,6 @@ public class NotificationsFragment extends Fragment {
     private TextView emptyText;
 
     public NotificationsFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -60,7 +59,7 @@ public class NotificationsFragment extends Fragment {
         if (currentUser != null) {
             notificationViewModel.loadNotifications(currentUser.getUid());
         } else {
-            emptyText.setText(R.string.hello_blank_fragment); // À remplacer par une ressource appropriée
+            emptyText.setText(R.string.hello_blank_fragment);
             emptyText.setVisibility(View.VISIBLE);
         }
     }
