@@ -1,7 +1,7 @@
 package com.example.travelshare.viewmodel;
 
+import android.content.Context;
 import android.net.Uri;
-import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -11,6 +11,7 @@ import com.example.travelshare.model.Group;
 import com.example.travelshare.model.User;
 import com.example.travelshare.repository.FireStoreCallBack;
 import com.example.travelshare.repository.GroupRepository;
+import com.example.travelshare.repository.ImgBBResponse;
 import com.example.travelshare.repository.StorageRepository;
 import com.example.travelshare.repository.UserRepository;
 
@@ -38,7 +39,7 @@ public class GroupViewModel extends ViewModel {
     public LiveData<List<User>> getMembers() { return members; }
     public LiveData<List<User>> getSearchResults() { return searchResults; }
 
-    public void createNewGroup(String name, String description, String userId, Uri imageUri) {
+    public void createNewGroup(Context context, String name, String description, String userId, Uri imageUri) {
         Group newGroup = new Group(name, description, userId);
 
         groupRepository.createGroup(newGroup, userId, new FireStoreCallBack<String>() {
@@ -47,10 +48,10 @@ public class GroupViewModel extends ViewModel {
                 newGroup.setId(groupId);
 
                 if (imageUri != null) {
-                    storageRepository.uploadGroupImage(imageUri, groupId, new FireStoreCallBack<String>() {
+                    storageRepository.uploadImage(context, imageUri, groupId, new FireStoreCallBack<ImgBBResponse.Data>() {
                         @Override
-                        public void onSuccess(String imageUrl) {
-                            newGroup.setImageUrl(imageUrl);
+                        public void onSuccess(ImgBBResponse.Data data) {
+                            newGroup.setImageUrl(data.getUrl());
                             finalizeCreation(newGroup);
                         }
                         @Override
@@ -142,17 +143,17 @@ public class GroupViewModel extends ViewModel {
         });
     }
 
-    public void updateGroupInfo(String newName, String newDescription, Uri imageUri) {
+    public void updateGroupInfo(Context context, String newName, String newDescription, Uri imageUri) {
         Group g = selectedGroup.getValue();
         if (g != null) {
             g.setGroupName(newName);
             g.setDescription(newDescription);
 
             if (imageUri != null){
-                storageRepository.uploadGroupImage(imageUri, g.getId(), new FireStoreCallBack<String>() {
+                storageRepository.uploadImage(context, imageUri, g.getId(), new FireStoreCallBack<ImgBBResponse.Data>() {
                     @Override
-                    public void onSuccess(String firebaseUrl) {
-                        g.setImageUrl(firebaseUrl);
+                    public void onSuccess(ImgBBResponse.Data data) {
+                        g.setImageUrl(data.getUrl());
                         saveGroupToFirestore(g);
                     }
                     @Override

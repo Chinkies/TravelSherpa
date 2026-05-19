@@ -14,6 +14,7 @@ import com.example.travelshare.model.Notification;
 import com.example.travelshare.model.Post;
 import com.example.travelshare.repository.AuthRespository;
 import com.example.travelshare.repository.FireStoreCallBack;
+import com.example.travelshare.repository.ImgBBResponse;
 import com.example.travelshare.repository.LieuRepository;
 import com.example.travelshare.repository.NotificationRepository;
 import com.example.travelshare.repository.PostRepository;
@@ -34,6 +35,7 @@ public class PostViewModel extends ViewModel {
     private MutableLiveData<List<Post>> posts = new MutableLiveData<>();
     private MutableLiveData<List<Post>> groupPost = new MutableLiveData<>();
     private MutableLiveData<Boolean> postCreated = new MutableLiveData<>();
+    private MutableLiveData<Boolean> postDeleted = new MutableLiveData<>(false);
     private MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private MutableLiveData<Post> selectedPost = new MutableLiveData<>();
@@ -43,6 +45,7 @@ public class PostViewModel extends ViewModel {
     public LiveData<List<Post>> getPosts() { return posts; }
     public LiveData<List<Post>> getGroupPost() { return groupPost; }
     public LiveData<Boolean> getPostCreated() { return postCreated; }
+    public LiveData<Boolean> getPostDeleted() { return postDeleted; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
     public LiveData<Post> getSelectedPost() { return selectedPost; }
@@ -113,26 +116,27 @@ public class PostViewModel extends ViewModel {
                     lieuRepository.saveLieu(nouveauLieu, new FireStoreCallBack<Void>() {
                         @Override
                         public void onSuccess(Void result) {
-                            handleImageUpload(post, imageUri);
+                            handleImageUpload(context, post, imageUri);
                         }
                         @Override
                         public void onFailure(String error) {
-                            handleImageUpload(post, imageUri);
+                            handleImageUpload(context, post, imageUri);
                         }
                     });
                 } else {
-                    handleImageUpload(post, imageUri);
+                    handleImageUpload(context, post, imageUri);
                 }
             });
         }).start();
     }
 
-    private void handleImageUpload(Post post, Uri imageUri) {
+    private void handleImageUpload(Context context, Post post, Uri imageUri) {
         if (imageUri != null) {
-            storageRepository.uploadGroupImage(imageUri, post.getAuthorId() + "_" + System.currentTimeMillis(), new FireStoreCallBack<String>() {
+            storageRepository.uploadImage(context, imageUri, post.getAuthorId() + "_" + System.currentTimeMillis(), new FireStoreCallBack<ImgBBResponse.Data>() {
                 @Override
-                public void onSuccess(String imageUrl) {
-                    post.setImageUrl(imageUrl);
+                public void onSuccess(ImgBBResponse.Data data) {
+                    post.setImageUrl(data.getUrl());
+                    post.setImageDeleteUrl(data.getDeleteUrl());
                     savePostToFirestore(post);
                 }
                 @Override
@@ -175,28 +179,39 @@ public class PostViewModel extends ViewModel {
     }
 
     public void updatePostCommentCount(String postId, int count) {
-        List<Post> currentPosts = posts.getValue();
-        if (currentPosts != null) {
-            for (Post p : currentPosts) {
-                if (p.getId().equals(postId)) {
-                    p.setCommentCount(count);
-                    break;
-                }
-            }
-            posts.setValue(new ArrayList<>(currentPosts));
+        Post updatedPost = null;
+        if (selectedPost.getValue() != null && selectedPost.getValue().getId().equals(postId)) {
+            updatedPost = selectedPost.getValue();
+        } else {
+            updatedPost = findPostById(postId);
         }
 
-        if (selectedPost.getValue() != null && selectedPost.getValue().getId().equals(postId)) {
-            Post p = selectedPost.getValue();
-            if (p.getCommentCount() == count) return;
-            p.setCommentCount(count);
-            selectedPost.setValue(p);
-
-            postRepository.updatePost(p, new FireStoreCallBack<Void>() {
+        if (updatedPost != null && updatedPost.getCommentCount() != count) {
+            updatedPost.setCommentCount(count);
+            notifyPostChanged(updatedPost);
+            
+            postRepository.updatePost(updatedPost, new FireStoreCallBack<Void>() {
                 @Override public void onSuccess(Void result) {}
                 @Override public void onFailure(String e) { errorMessage.postValue("Erreur update : " + e); }
             });
         }
+    }
+
+    private Post findPostById(String postId) {
+        Post p = findInList(posts, postId);
+        if (p == null) p = findInList(userPosts, postId);
+        if (p == null) p = findInList(groupPost, postId);
+        return p;
+    }
+
+    private Post findInList(MutableLiveData<List<Post>> liveData, String postId) {
+        List<Post> list = liveData.getValue();
+        if (list != null) {
+            for (Post post : list) {
+                if (post.getId().equals(postId)) return post;
+            }
+        }
+        return null;
     }
 
     public void loadUserPosts(String userId) {
@@ -223,6 +238,7 @@ public class PostViewModel extends ViewModel {
     }
 
     public void resetPostCreated() { postCreated.setValue(false); }
+    public void resetPostDeleted() { postDeleted.setValue(false); }
 
     public void toggleLike(Post post, com.example.travelshare.model.User currentUser) {
         if (currentUser == null) return;
@@ -253,10 +269,67 @@ public class PostViewModel extends ViewModel {
                 });
             }
         }
-        selectedPost.setValue(post);
+        
+        // Mise à jour de toutes les listes LiveData pour forcer le rafraîchissement UI
+        notifyPostChanged(post);
+        
         postRepository.toggleLike(post, userId, !alreadyLiked, new FireStoreCallBack<Void>() {
             @Override public void onSuccess(Void result) {}
             @Override public void onFailure(String e) { errorMessage.postValue("Erreur like : " + e); }
+        });
+    }
+
+    /**
+     * Notifie tous les observateurs qu'un post a été modifié.
+     */
+    private void notifyPostChanged(Post updatedPost) {
+        if (selectedPost.getValue() != null && selectedPost.getValue().getId().equals(updatedPost.getId())) {
+            selectedPost.setValue(updatedPost);
+        }
+        
+        updatePostInList(posts, updatedPost);
+        updatePostInList(userPosts, updatedPost);
+        updatePostInList(groupPost, updatedPost);
+    }
+
+    private void updatePostInList(MutableLiveData<List<Post>> liveData, Post updatedPost) {
+        List<Post> currentList = liveData.getValue();
+        if (currentList != null) {
+            boolean found = false;
+            for (int i = 0; i < currentList.size(); i++) {
+                if (currentList.get(i).getId().equals(updatedPost.getId())) {
+                    currentList.set(i, updatedPost);
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                liveData.setValue(new ArrayList<>(currentList));
+            }
+        }
+    }
+
+    public void deletePost(Post post, FireStoreCallBack<Void> callback) {
+        isLoading.setValue(true);
+        postRepository.deletePost(post.getId(), new FireStoreCallBack<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                // Supprimer l'image sur ImgBB si l'URL de suppression est présente
+                if (post.getImageDeleteUrl() != null && !post.getImageDeleteUrl().isEmpty()) {
+                    storageRepository.deleteImage(post.getImageDeleteUrl());
+                }
+
+                isLoading.postValue(false);
+                postDeleted.postValue(true);
+                callback.onSuccess(null);
+            }
+
+            @Override
+            public void onFailure(String e) {
+                isLoading.postValue(false);
+                errorMessage.postValue(e);
+                callback.onFailure(e);
+            }
         });
     }
 }

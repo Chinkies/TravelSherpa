@@ -1,8 +1,10 @@
 package com.example.travelshare.adapter;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -11,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.model.Post;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,7 +63,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.Pseudo.setText(currentPost.getAuthorName());
         holder.Description.setText(currentPost.getDescription());
 
-        holder.countLikes.setText(currentPost.getLikesCount() + " like" + (currentPost.getLikesCount() > 1 ? "s" : ""));
+        // Mise à jour de l'UI (Compteurs et état du Like)
+        updateLikesUI(holder, currentPost);
         holder.countComments.setText(currentPost.getCommentCount() + " commentaire" + (currentPost.getCommentCount() > 1 ? "s" : ""));
 
         if (currentPost.getDate() != null) {
@@ -70,12 +72,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
 
         String postImg = currentPost.getImageUrl();
-
-        if (currentUser != null && currentPost.getLikers() != null && currentPost.getLikers().contains(currentUser)) {
-            holder.btnLikes.setColorFilter(android.graphics.Color.RED);
-        } else {
-            holder.btnLikes.clearColorFilter();;
-        }
 
         Glide.with(holder.itemView.getContext())
                 .load(postImg != null && !postImg.trim().isEmpty() ? postImg : null)
@@ -100,8 +96,50 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         holder.btnMore.setOnClickListener(v -> listener.onMoreClick(v, currentPost));
 
-        holder.btnLikes.setOnClickListener(v -> listener.onLikeClick(currentPost));
+        holder.btnLikes.setOnClickListener(v -> {
+            if (currentUser != null) {
+                boolean isLiked = currentPost.getLikers() != null && currentPost.getLikers().contains(currentUser);
+                
+                // Retour visuel immédiat (Optimiste)
+                if (!isLiked) {
+                    holder.btnLikes.setColorFilter(Color.RED);
+                    animateHeart(holder.btnLikes);
+                } else {
+                    holder.btnLikes.clearColorFilter();
+                }
+                
+                // Mise à jour immédiate du texte pour la fluidité
+                int newCount = currentPost.getLikesCount() + (isLiked ? -1 : 1);
+                holder.countLikes.setText(newCount + " like" + (newCount > 1 ? "s" : ""));
+
+                listener.onLikeClick(currentPost);
+            }
+        });
+        
         holder.btnComment.setOnClickListener(v -> listener.onCommentClick(currentPost));
+    }
+
+    private void updateLikesUI(PostViewHolder holder, Post post) {
+        int count = post.getLikesCount();
+        holder.countLikes.setText(count + " like" + (count > 1 ? "s" : ""));
+        
+        if (currentUser != null && post.getLikers() != null && post.getLikers().contains(currentUser)) {
+            holder.btnLikes.setColorFilter(Color.RED);
+        } else {
+            holder.btnLikes.clearColorFilter();
+        }
+    }
+
+    private void animateHeart(View view) {
+        view.setScaleX(0.8f);
+        view.setScaleY(0.8f);
+        view.animate()
+                .scaleX(1.3f)
+                .scaleY(1.3f)
+                .setDuration(150)
+                .setInterpolator(new OvershootInterpolator())
+                .withEndAction(() -> view.animate().scaleX(1f).scaleY(1f).setDuration(100).start())
+                .start();
     }
 
     @Override

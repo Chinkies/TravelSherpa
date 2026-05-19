@@ -66,7 +66,7 @@ public class GroupCreateFragment extends Fragment {
             String userId = authViewModel.getCurrentUser().getUid();
 
             if (!name.isEmpty()) {
-                groupViewModel.createNewGroup(name, desc, userId, selectedImageUri);
+                groupViewModel.createNewGroup(requireContext(), name, desc, userId, selectedImageUri);
             } else {
                 Toast.makeText(getContext(), "Le nom est requis", Toast.LENGTH_SHORT).show();
             }

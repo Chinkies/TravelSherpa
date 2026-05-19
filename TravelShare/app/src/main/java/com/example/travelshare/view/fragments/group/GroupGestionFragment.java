@@ -32,6 +32,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 public class GroupGestionFragment extends Fragment {
 
     private GroupViewModel groupViewModel;
+    private AuthViewModel authViewModel;
     private RecyclerView recyclerViewAdmin;
     private RecyclerView recyclerViewMember;
     private UserAdapter userAdapterAdmin;
@@ -60,7 +61,7 @@ public class GroupGestionFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        AuthViewModel authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         if (authViewModel.getCurrentUser() == null) {
             android.widget.Toast.makeText(getContext(), "Connectez-vous pour accéder à cette page", android.widget.Toast.LENGTH_SHORT).show();
@@ -68,6 +69,7 @@ public class GroupGestionFragment extends Fragment {
             return;
         }
 
+        String currentUid = authViewModel.getCurrentUser().getUid();
         groupViewModel = new ViewModelProvider(requireActivity()).get(GroupViewModel.class);
 
         editName = view.findViewById(R.id.group_modify_name_input);
@@ -115,6 +117,7 @@ public class GroupGestionFragment extends Fragment {
             @Override
             public void onPromote(User user) {}
         });
+        userAdapterAdmin.setCurrentUserId(currentUid);
 
         recyclerViewAdmin.setAdapter(userAdapterAdmin);
 
@@ -129,6 +132,7 @@ public class GroupGestionFragment extends Fragment {
                 showPromotionConfirmation(user);
             }
         });
+        userAdapterMember.setCurrentUserId(currentUid);
 
         recyclerViewMember.setAdapter(userAdapterMember);
 
@@ -151,7 +155,7 @@ public class GroupGestionFragment extends Fragment {
             return;
         }
 
-        groupViewModel.updateGroupInfo(name, desc, (selectedImageUri != null ? selectedImageUri : null));
+        groupViewModel.updateGroupInfo(requireContext(), name, desc, (selectedImageUri != null ? selectedImageUri : null));
         Toast.makeText(getContext(), "Changement Sauvegardés !", Toast.LENGTH_SHORT).show();
     }
 
@@ -172,6 +176,13 @@ public class GroupGestionFragment extends Fragment {
     }
 
     private void showDeleteAdminConfirmation(User user){
+        String currentUid = authViewModel.getCurrentUser().getUid();
+
+        if (user.getId().equals(currentUid)) {
+            Toast.makeText(getContext(), "Vous ne pouvez pas retirer vos propres droits administrateur", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         new AlertDialog.Builder(requireContext()).setTitle("Retirer l'admin")
                 .setMessage("Voulez-vous retirer les droits admin de " + user.getPseudo() + " ?")
                 .setPositiveButton("Rétrograder en membre", (dialog, which) -> {

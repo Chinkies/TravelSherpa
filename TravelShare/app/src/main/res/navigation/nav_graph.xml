@@ -57,6 +57,12 @@
         android:label="Nouvelle publication"
         tools:layout="@layout/fragment_publish" />
 
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.travelshare.view.fragments.navigation.NotificationsFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_notifications" />
+
     <!-- TRAVEL PATH -->
     <fragment
         android:id="@+id/preferenceFragment"

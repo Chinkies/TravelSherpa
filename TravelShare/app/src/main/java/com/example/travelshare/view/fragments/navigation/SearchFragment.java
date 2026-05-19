@@ -150,7 +150,11 @@ public class SearchFragment extends Fragment {
                 bundle.putString("userId", userId);
                 Navigation.findNavController(view).navigate(R.id.action_global_to_profileFragment, bundle);
             }
-            @Override public void onMoreClick(View v, Post post) { showPostMenu(requireContext(), view, post); }
+            @Override public void onMoreClick(View v, Post post) {
+                User user = userViewModel.getCurrentUser().getValue();
+                String uid = (user != null) ? user.getId() : "";
+                showPostMenu(requireContext(), v, post, uid, postViewModel);
+            }
             @Override public void onLikeClick(Post post) {
                 User user = userViewModel.getCurrentUser().getValue();
                 if (user == null) Toast.makeText(getContext(), "Veuillez vous connecter pour liker", Toast.LENGTH_SHORT).show();

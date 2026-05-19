@@ -101,7 +101,7 @@ public class ProfileModifyFragment extends Fragment {
         }
 
         if (selectedImageUri != null) {
-            userViewModel.updateProfileWithImage(uid, newName, newDesc, selectedImageUri);
+            userViewModel.updateProfileWithImage(requireContext(), uid, newName, newDesc, selectedImageUri);
         } else {
             userViewModel.updateMyProfile(uid, newName, newDesc);
         }
@@ -111,7 +111,7 @@ public class ProfileModifyFragment extends Fragment {
                 Toast.makeText(getContext(), "Profil mis à jour !", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(view).popBackStack();
             } else {
-                Toast.makeText(getContext(), "Erreur : " + error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Erreur : " + error, Toast.LENGTH_LONG).show();
             }
         });
     }

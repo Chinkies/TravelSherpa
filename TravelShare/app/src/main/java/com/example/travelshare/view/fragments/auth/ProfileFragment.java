@@ -41,7 +41,7 @@ public class ProfileFragment extends Fragment {
     private TextView profilPseudo, profilDesc, countPubs,
         countGroups, countLikes, countParcours;
     private Button btnAction;
-    private ImageButton btnSettings;
+    private ImageButton btnSettings, btnNotifications;
     private RadioGroup radioGroup;
     private RecyclerView recyclerPublications, recyclerGroups, recyclerParcours;
 
@@ -88,6 +88,7 @@ public class ProfileFragment extends Fragment {
         countParcours = view.findViewById(R.id.profile_count_parcours);
         btnAction = view.findViewById(R.id.button_modification);
         btnSettings = view.findViewById(R.id.profile_btn_settings);
+        btnNotifications = view.findViewById(R.id.profile_btn_notifications);
         radioGroup = view.findViewById(R.id.radio_group);
         recyclerPublications = view.findViewById(R.id.recycler_publications);
         recyclerGroups = view.findViewById(R.id.recycler_groups);
@@ -104,6 +105,7 @@ public class ProfileFragment extends Fragment {
             btnAction.setText("Modifier le profil");
             btnAction.setVisibility(View.VISIBLE);
             btnSettings.setVisibility(View.VISIBLE);
+            btnNotifications.setVisibility(View.VISIBLE);
             view.findViewById(R.id.profile_btn_logout).setVisibility(View.VISIBLE);
 
             btnAction.setOnClickListener(v -> {
@@ -116,9 +118,14 @@ public class ProfileFragment extends Fragment {
             btnSettings.setOnClickListener(v -> {
                 Navigation.findNavController(view).navigate(R.id.action_profileFragment_to_notificationSettingsFragment);
             });
+
+            btnNotifications.setOnClickListener(v -> {
+                Navigation.findNavController(view).navigate(R.id.notificationsFragment);
+            });
         } else {
             btnAction.setVisibility(View.GONE);
             btnSettings.setVisibility(View.GONE);
+            btnNotifications.setVisibility(View.GONE);
             view.findViewById(R.id.profile_btn_logout).setVisibility(View.GONE);
         }
 
@@ -161,7 +168,7 @@ public class ProfileFragment extends Fragment {
             }
             @Override public void onProfileClick(String id) { }
             @Override public void onMoreClick(View v, Post post) {
-                NavigationUtils.showPostMenu(requireContext(), v, post);
+                NavigationUtils.showPostMenu(requireContext(), v, post, currentUserId, postViewModel);
             }
             @Override public void onLikeClick(Post post) {
                 User currentUser = userViewModel.getCurrentUser().getValue();
@@ -190,6 +197,12 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupObservers() {
+        userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null && postAdapter != null) {
+                postAdapter.updateUserId(user.getId());
+            }
+        });
+
         userViewModel.getSelectedUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 profilPseudo.setText(user.getPseudo());

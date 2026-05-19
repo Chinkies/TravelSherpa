@@ -1,6 +1,7 @@
 package com.example.travelshare.view.fragments.detail;
 
 import static com.example.travelshare.utils.NavigationUtils.showPostMenu;
+import static com.example.travelshare.utils.NavigationUtils.showCommentMenu;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -92,6 +93,13 @@ public class PostDetailFragment extends Fragment {
             }
         });
 
+        postViewModel.getPostDeleted().observe(getViewLifecycleOwner(), isDeleted -> {
+            if (isDeleted) {
+                postViewModel.resetPostDeleted();
+                Navigation.findNavController(view).popBackStack();
+            }
+        });
+
         btnSend.setOnClickListener(v -> sendComment());
     }
 
@@ -145,7 +153,9 @@ public class PostDetailFragment extends Fragment {
 
         view.findViewById(R.id.post_detail_btn_more).setOnClickListener(v -> {
             if (currentPost != null) {
-                showPostMenu(getContext(), view, currentPost);
+                User currentUser = userViewModel.getCurrentUser().getValue();
+                String uid = (currentUser != null) ? currentUser.getId() : "";
+                showPostMenu(getContext(), view.findViewById(R.id.post_detail_btn_more), currentPost, uid, postViewModel);
             }
         });
 
@@ -231,7 +241,14 @@ public class PostDetailFragment extends Fragment {
 
     private void setupRecyclerView(View view) {
         RecyclerView recyclerComments = view.findViewById(R.id.post_detail_comment_section);
-        commentAdapter = new CommentAdapter();
+        
+        User currentUser = userViewModel.getCurrentUser().getValue();
+        String uid = (currentUser != null) ? currentUser.getId() : "";
+        
+        commentAdapter = new CommentAdapter(uid, (v, comment) -> {
+            showCommentMenu(getContext(), v, comment, uid, commentViewModel);
+        });
+
         recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerComments.setAdapter(commentAdapter);
     }

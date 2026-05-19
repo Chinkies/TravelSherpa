@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_bar);
 
+        // On retire notificationsFragment des destinations de premier niveau pour avoir la flèche de retour
         appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.feedFragment, R.id.searchFragment, R.id.groupsFragment, 
                 R.id.publishFragment, R.id.preferenceFragment)
