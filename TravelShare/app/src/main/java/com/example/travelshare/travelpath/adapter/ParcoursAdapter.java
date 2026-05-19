@@ -83,6 +83,8 @@ public class ParcoursAdapter extends RecyclerView.Adapter<ParcoursAdapter.Parcou
             }
         }
 
+        holder.imgParcours.setTag(position);
+
         holder.imgParcours.setImageResource(R.drawable.ballon_voyage_recherrche_default);
 
         if (parcours.getListeEtapes() != null && !parcours.getListeEtapes().isEmpty()) {
@@ -94,7 +96,8 @@ public class ParcoursAdapter extends RecyclerView.Adapter<ParcoursAdapter.Parcou
                         .centerCrop()
                         .into(holder.imgParcours);
             } else {
-                chargerImageSecurisee(premierLieu, position, holder.itemView);
+                // Sinon on interroge Wikipédia
+                chargerImagePremierLieu(premierLieu, holder.imgParcours, position);
             }
         }
 
@@ -106,23 +109,37 @@ public class ParcoursAdapter extends RecyclerView.Adapter<ParcoursAdapter.Parcou
         });
     }
 
-    private void chargerImageSecurisee(Lieu premierLieu, int position, View itemView) {
+    private void chargerImagePremierLieu(Lieu premierLieu, ImageView imgParcours, int position) {
         String titre = (premierLieu.getWikipediaTitle() != null) ? premierLieu.getWikipediaTitle() : premierLieu.getName();
         String titreWiki = titre.replace(" ", "_");
 
         WikipediaClient.getApi().getSummary(titreWiki).enqueue(new Callback<WikipediaResponse>() {
             @Override
             public void onResponse(Call<WikipediaResponse> call, Response<WikipediaResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().thumbnail != null) {
-                    String url = response.body().thumbnail.source;
-                    premierLieu.setRealImageUrl(url);
+                if (imgParcours.getTag() == null || !imgParcours.getTag().equals(position)) return;
 
-                    itemView.post(() -> notifyItemChanged(position));
+                String finalUrl;
+                if (response.isSuccessful() && response.body() != null && response.body().thumbnail != null) {
+                    finalUrl = response.body().thumbnail.source; // Image Wikipédia
+                } else {
+                    finalUrl = "https://picsum.photos/seed/" + premierLieu.getId() + "/600/300";
                 }
+
+                premierLieu.setRealImageUrl(finalUrl);
+
+                Glide.with(imgParcours.getContext())
+                        .load(finalUrl)
+                        .centerCrop()
+                        .into(imgParcours);
             }
 
             @Override
             public void onFailure(Call<WikipediaResponse> call, Throwable t) {
+                if (imgParcours.getTag() == null || !imgParcours.getTag().equals(position)) return;
+
+                String finalUrl = "https://picsum.photos/seed/" + premierLieu.getId() + "/600/300";
+                premierLieu.setRealImageUrl(finalUrl);
+                Glide.with(imgParcours.getContext()).load(finalUrl).centerCrop().into(imgParcours);
             }
         });
     }

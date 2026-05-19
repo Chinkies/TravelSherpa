@@ -1,6 +1,8 @@
 package com.example.travelshare.view.fragments.travelpath;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -25,10 +27,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.model.Lieu;
 import com.example.travelshare.travelpath.Etape;
 import com.example.travelshare.travelpath.Parcours;
+import com.example.travelshare.travelpath.WikipediaClient;
+import com.example.travelshare.travelpath.WikipediaResponse;
 import com.example.travelshare.travelpath.adapter.EtapeAdapter;
 import com.example.travelshare.viewmodel.AuthViewModel;
 import com.example.travelshare.viewmodel.ParcoursViewModel;
@@ -43,6 +48,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ResultatFragment extends Fragment {
 
@@ -140,6 +149,34 @@ public class ResultatFragment extends Fragment {
 
         btnExportPdf.setOnClickListener(v -> exporterEnPDF());
         btnPartager.setOnClickListener(v -> partagerParcours());
+
+        chargerImageVille(view);
+    }
+
+    private void chargerImageVille(View view) {
+        ImageView imgBanner = view.findViewById(R.id.imgBanner);
+        if (imgBanner == null || getContext() == null) return;
+
+        SharedPreferences prefs = getContext().getSharedPreferences("TravelPath", Context.MODE_PRIVATE);
+        String ville = prefs.getString("VILLE", "Paris");
+
+        String villeWiki = ville.replace(" ", "_");
+        WikipediaClient.getApi().getSummary(villeWiki).enqueue(new Callback<WikipediaResponse>() {
+            @Override
+            public void onResponse(Call<WikipediaResponse> call, Response<WikipediaResponse> response) {
+                if (!isAdded() || getView() == null) return;
+                if (response.isSuccessful() && response.body() != null && response.body().thumbnail != null) {
+                    Glide.with(requireContext())
+                            .load(response.body().thumbnail.source)
+                            .centerCrop()
+                            .into(imgBanner);
+                }
+            }
+            @Override
+            public void onFailure(Call<WikipediaResponse> call, Throwable t) {
+                // On laisse l'image par défaut en cas d'erreur
+            }
+        });
     }
 
     private void partagerParcours() {
