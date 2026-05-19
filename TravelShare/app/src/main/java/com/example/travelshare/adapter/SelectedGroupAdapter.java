@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.model.Group;
 
@@ -51,7 +52,14 @@ public class SelectedGroupAdapter extends RecyclerView.Adapter<SelectedGroupAdap
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Group g = selectedGroups.get(position);
         holder.name.setText(g.getGroupName());
-        holder.icon.setImageResource(R.drawable.img_app);
+        
+        Glide.with(holder.itemView.getContext())
+                .load(g.getImageUrl())
+                .placeholder(R.drawable.img_app)
+                .error(R.drawable.img_app)
+                .circleCrop()
+                .into(holder.icon);
+
         holder.btnDelete.setOnClickListener(v -> removeGroup(g));
     }
 

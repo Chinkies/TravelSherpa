@@ -170,28 +170,24 @@ public class PostDetailFragment extends Fragment {
                 if (currentPost.getLocation() != null) {
                     bundle.putDouble("LATITUDE", currentPost.getLocation().getLatitude());
                     bundle.putDouble("LONGITUDE", currentPost.getLocation().getLongitude());
-                    
+                }
+
+                // Toujours passer l'indication pour le champ "Lieu favori"
+                if (currentPost.getIndication() != null && !currentPost.getIndication().isEmpty()) {
+                    bundle.putString("SUGGESTED_LIEU", currentPost.getIndication());
+                } else if (currentPost.getLocation() != null) {
+                    // Si pas d'indication, on met les coords dans le lieu favori aussi
                     String coords = String.format(Locale.US, "%.5f, %.5f", 
                             currentPost.getLocation().getLatitude(), 
                             currentPost.getLocation().getLongitude());
                     bundle.putString("SUGGESTED_LIEU", coords);
-                } else {
-                    bundle.putString("SUGGESTED_LIEU", currentPost.getIndication());
                 }
 
                 if (currentPost.getTags() != null) {
                     bundle.putStringArrayList("POST_TAGS", new ArrayList<>(currentPost.getTags()));
                 }
 
-                NavController navController = Navigation.findNavController(view);
-
-                NavOptions navOptions = new NavOptions.Builder()
-                        .setLaunchSingleTop(true)
-                        .setRestoreState(true)
-                        .setPopUpTo(navController.getGraph().getStartDestinationId(), false, true)
-                        .build();
-
-                navController.navigate(R.id.preferenceFragment, bundle, navOptions);
+                Navigation.findNavController(view).navigate(R.id.preferenceFragment, bundle);
             }
         });
 

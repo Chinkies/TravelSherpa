@@ -34,6 +34,7 @@ import com.example.travelshare.viewmodel.UserViewModel;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
@@ -145,7 +146,13 @@ public class ProfileFragment extends Fragment {
 
         if (!visitedUserId.isEmpty()) {
             userViewModel.loadUser(visitedUserId);
-            postViewModel.loadUserPosts(visitedUserId);
+            
+            // On ne recharge les posts que si la liste est vide ou si on a changé d'utilisateur
+            List<Post> currentPosts = postViewModel.getUserPosts().getValue();
+            if (currentPosts == null || currentPosts.isEmpty() || !currentPosts.get(0).getAuthorId().equals(visitedUserId)) {
+                postViewModel.loadUserPosts(visitedUserId);
+            }
+
             userViewModel.fetchUserParcours(visitedUserId);
         } else {
             profilPseudo.setText("Mode Invité");

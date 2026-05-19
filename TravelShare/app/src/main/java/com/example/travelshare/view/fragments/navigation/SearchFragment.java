@@ -111,7 +111,9 @@ public class SearchFragment extends Fragment {
         setupFilters();
         observeData();
 
-        postViewModel.loadFeed();
+        if (postViewModel.getPosts().getValue() == null || postViewModel.getPosts().getValue().isEmpty()) {
+            postViewModel.loadFeed();
+        }
         postViewModel.loadOfficialTags();
     }
 

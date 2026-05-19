@@ -92,6 +92,13 @@ public class PostRepository {
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
+    public void updatePostCommentCount(String postId, int count, FireStoreCallBack<Void> callback) {
+        db.collection(COLLECTION_POSTS).document(postId)
+                .update("commentCount", count)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
     public void deletePost(String postId, FireStoreCallBack<Void> callback) {
         db.collection(COLLECTION_POSTS).document(postId)
                 .delete()

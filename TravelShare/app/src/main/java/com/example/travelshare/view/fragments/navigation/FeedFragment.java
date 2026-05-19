@@ -109,6 +109,8 @@ public class FeedFragment extends Fragment {
             }
         });
 
-        postViewModel.loadFeed();
+        if (postViewModel.getPosts().getValue() == null || postViewModel.getPosts().getValue().isEmpty()) {
+            postViewModel.loadFeed();
+        }
     }
 }

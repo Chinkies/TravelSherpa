@@ -190,7 +190,7 @@ public class PostViewModel extends ViewModel {
             updatedPost.setCommentCount(count);
             notifyPostChanged(updatedPost);
             
-            postRepository.updatePost(updatedPost, new FireStoreCallBack<Void>() {
+            postRepository.updatePostCommentCount(postId, count, new FireStoreCallBack<Void>() {
                 @Override public void onSuccess(Void result) {}
                 @Override public void onFailure(String e) { errorMessage.postValue("Erreur update : " + e); }
             });

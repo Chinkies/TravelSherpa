@@ -118,7 +118,12 @@ public class GroupDetailFragment extends Fragment {
         groupViewModel.getSelectedGroup().observe(getViewLifecycleOwner(), group -> {
             if (group != null) {
                 title.setText(group.getGroupName());
-                postViewModel.loadGroupPosts(group.getId());
+                
+                // On ne recharge que si nécessaire
+                java.util.List<Post> currentPosts = postViewModel.getGroupPost().getValue();
+                if (currentPosts == null || currentPosts.isEmpty() || !currentPosts.get(0).getGroupIds().contains(group.getId())) {
+                    postViewModel.loadGroupPosts(group.getId());
+                }
 
                 if (group.getImageUrl() != null && !group.getImageUrl().isEmpty()) {
                     Glide.with(this)
