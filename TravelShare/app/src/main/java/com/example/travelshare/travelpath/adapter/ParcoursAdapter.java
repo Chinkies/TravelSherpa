@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.model.Lieu;
-import com.example.travelshare.travelpath.Etape;
 import com.example.travelshare.travelpath.Parcours;
 import com.example.travelshare.travelpath.WikipediaClient;
 import com.example.travelshare.travelpath.WikipediaResponse;
@@ -58,17 +57,11 @@ public class ParcoursAdapter extends RecyclerView.Adapter<ParcoursAdapter.Parcou
         Parcours parcours = listeParcours.get(position);
         Context context = holder.itemView.getContext();
 
-        holder.itemView.setTag(position);
         holder.textNomParcours.setText(parcours.getNomOption());
 
-        // Formatage de la durée
-        int totalMin = parcours.getDureeTotale();
-        int j = totalMin / 1440;
-        int h = (totalMin % 1440) / 60;
-        int m = totalMin % 60;
-        String dureeStr = (j > 0 ? j + "j " : "") + (h > 0 ? h + "h " : "") + m + "min";
-
-        String stats = "Budget: " + (int)parcours.getBudgetTotal() + "€ | " + dureeStr + " | " + parcours.getNiveauDifficulte();
+        int nbJours = parcours.getNbJours();
+        String strJours = nbJours > 1 ? " jours" : " jour";
+        String stats = "Budget: " + (int)parcours.getBudgetTotal() + "€ | Durée: " + nbJours + strJours + " | " + parcours.getNiveauDifficulte();
         holder.textStats.setText(stats);
 
         holder.layoutChipsLieux.removeAllViews();
@@ -90,10 +83,19 @@ public class ParcoursAdapter extends RecyclerView.Adapter<ParcoursAdapter.Parcou
             }
         }
 
-        // --- CHARGEMENT D'IMAGE INTELLIGENT ---
         holder.imgParcours.setImageResource(R.drawable.ballon_voyage_recherrche_default);
+
         if (parcours.getListeEtapes() != null && !parcours.getListeEtapes().isEmpty()) {
-            tenterChargerImage(holder, parcours.getListeEtapes(), 0, position);
+            Lieu premierLieu = parcours.getListeEtapes().get(0).getLieu();
+
+            if (premierLieu.getRealImageUrl() != null) {
+                Glide.with(context)
+                        .load(premierLieu.getRealImageUrl())
+                        .centerCrop()
+                        .into(holder.imgParcours);
+            } else {
+                chargerImageSecurisee(premierLieu, position, holder.itemView);
+            }
         }
 
         holder.btnVoirDetails.setOnClickListener(v -> {
@@ -104,44 +106,38 @@ public class ParcoursAdapter extends RecyclerView.Adapter<ParcoursAdapter.Parcou
         });
     }
 
-    private void tenterChargerImage(ParcoursViewHolder holder, List<Etape> etapes, int index, int pos) {
-        if (index >= etapes.size() || index >= 5) return;
-        
-        Lieu lieu = etapes.get(index).getLieu();
-        if (lieu.getRealImageUrl() != null) {
-            Glide.with(holder.itemView.getContext()).load(lieu.getRealImageUrl()).centerCrop().into(holder.imgParcours);
-            return;
-        }
+    private void chargerImageSecurisee(Lieu premierLieu, int position, View itemView) {
+        String titre = (premierLieu.getWikipediaTitle() != null) ? premierLieu.getWikipediaTitle() : premierLieu.getName();
+        String titreWiki = titre.replace(" ", "_");
 
-        String titre = (lieu.getWikipediaTitle() != null) ? lieu.getWikipediaTitle() : lieu.getName();
-        WikipediaClient.getApi().getSummary(titre.replace(" ", "_")).enqueue(new Callback<WikipediaResponse>() {
+        WikipediaClient.getApi().getSummary(titreWiki).enqueue(new Callback<WikipediaResponse>() {
             @Override
             public void onResponse(Call<WikipediaResponse> call, Response<WikipediaResponse> response) {
-                if (holder.itemView.getTag() == null || !String.valueOf(pos).equals(holder.itemView.getTag().toString())) return;
-                
                 if (response.isSuccessful() && response.body() != null && response.body().thumbnail != null) {
                     String url = response.body().thumbnail.source;
-                    lieu.setRealImageUrl(url);
-                    Glide.with(holder.itemView.getContext()).load(url).centerCrop().into(holder.imgParcours);
-                } else {
-                    tenterChargerImage(holder, etapes, index + 1, pos);
+                    premierLieu.setRealImageUrl(url);
+
+                    itemView.post(() -> notifyItemChanged(position));
                 }
             }
+
             @Override
             public void onFailure(Call<WikipediaResponse> call, Throwable t) {
-                tenterChargerImage(holder, etapes, index + 1, pos);
             }
         });
     }
 
     @Override
-    public int getItemCount() { return listeParcours != null ? listeParcours.size() : 0; }
+    public int getItemCount() {
+        return listeParcours != null ? listeParcours.size() : 0;
+    }
 
     public static class ParcoursViewHolder extends RecyclerView.ViewHolder {
         TextView textNomParcours, textStats;
         ImageView imgParcours;
         LinearLayout layoutChipsLieux;
         Button btnVoirDetails;
+
         public ParcoursViewHolder(@NonNull View itemView) {
             super(itemView);
             imgParcours = itemView.findViewById(R.id.imgParcours);

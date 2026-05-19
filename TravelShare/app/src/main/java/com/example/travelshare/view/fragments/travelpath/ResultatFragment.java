@@ -100,7 +100,7 @@ public class ResultatFragment extends Fragment {
         TextView tvDuree = view.findViewById(R.id.valDuree);
         TextView tvEffort = view.findViewById(R.id.valEffort);
         TextView tvLieux = view.findViewById(R.id.valLieux);
-        
+
         recyclerView = view.findViewById(R.id.recyclerViewEtapes);
         Button btnSauvegarder = view.findViewById(R.id.btnSauvegarder);
         ImageView btnPartager = view.findViewById(R.id.btnPartager);
@@ -108,9 +108,13 @@ public class ResultatFragment extends Fragment {
 
         tvTitre.setText(parcours.getNomOption() != null ? parcours.getNomOption() : "Sans titre");
         tvBudget.setText(String.format(Locale.FRANCE, "Budget: %.2f €", parcours.getBudgetTotal()));
-        tvDuree.setText(String.format(Locale.FRANCE, "Durée: %d min", parcours.getDureeTotale()));
+
+        int nbJours = parcours.getNbJours();
+        String strJours = nbJours > 1 ? " jours" : " jour";
+        tvDuree.setText(String.format(Locale.FRANCE, "Durée: %d%s", nbJours, strJours));
+
         tvEffort.setText(String.format(Locale.FRANCE, "Effort: %s", parcours.getNiveauDifficulte()));
-        
+
         int nbEtapes = (parcours.getListeEtapes() != null) ? parcours.getListeEtapes().size() : 0;
         tvLieux.setText(String.format(Locale.FRANCE, "Lieux: %d", nbEtapes));
 
@@ -125,7 +129,6 @@ public class ResultatFragment extends Fragment {
         recyclerView.setAdapter(etapeAdapter);
 
         FirebaseUser currentUser = authViewModel.getCurrentUser();
-        // Masquer le bouton si pas connecté OU si le parcours est déjà sauvegardé (createur_id non null)
         if (currentUser == null || parcours.getCreateur_id() != null) {
             btnSauvegarder.setVisibility(View.GONE);
         } else {
@@ -144,7 +147,10 @@ public class ResultatFragment extends Fragment {
         StringBuilder textePartage = new StringBuilder();
         textePartage.append(" Découvrez mon parcours TravelShare : ").append(parcours.getNomOption()).append("\n\n");
         textePartage.append(" Budget : ").append(String.format(Locale.FRANCE, "%.2f", parcours.getBudgetTotal())).append("€\n");
-        textePartage.append(" Durée : ").append(parcours.getDureeTotale()).append(" min\n\n");
+
+        int nbJours = parcours.getNbJours();
+        textePartage.append(" Durée : ").append(nbJours).append(nbJours > 1 ? " jours\n\n" : " jour\n\n");
+
         textePartage.append(" Étapes :\n");
 
         if (parcours.getListeEtapes() != null) {
@@ -197,7 +203,10 @@ public class ResultatFragment extends Fragment {
         paint.setColor(Color.DKGRAY);
         canvas.drawText("Budget total : " + String.format(Locale.FRANCE, "%.2f", parcours.getBudgetTotal()) + "€", 40, yPosition, paint);
         yPosition += 25;
-        canvas.drawText("Durée totale : " + parcours.getDureeTotale() + " min", 40, yPosition, paint);
+
+        int nbJours = parcours.getNbJours();
+        canvas.drawText("Durée totale : " + nbJours + (nbJours > 1 ? " jours" : " jour"), 40, yPosition, paint);
+
         yPosition += 25;
         canvas.drawText("Effort global : " + parcours.getNiveauDifficulte(), 40, yPosition, paint);
         yPosition += 50;
@@ -258,7 +267,6 @@ public class ResultatFragment extends Fragment {
             if (saved) {
                 Toast.makeText(getContext(), "Parcours sauvegardé avec succès !", Toast.LENGTH_SHORT).show();
                 parcoursViewModel.resetParcoursSaved();
-                // Optionnel : masquer le bouton après sauvegarde réussie
                 View b = getView();
                 if (b != null) {
                     Button btn = b.findViewById(R.id.btnSauvegarder);

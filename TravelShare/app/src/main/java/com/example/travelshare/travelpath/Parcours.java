@@ -22,7 +22,15 @@ public class Parcours implements Serializable {
         this.niveauDifficulte = niveauDifficulte;
     }
 
-    // Getters et Setters
+    public int getNbJours() {
+        if (listeEtapes == null || listeEtapes.isEmpty()) return 0;
+        int maxJour = 1;
+        for (Etape e : listeEtapes) {
+            if (e.getJour() > maxJour) maxJour = e.getJour();
+        }
+        return maxJour;
+    }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

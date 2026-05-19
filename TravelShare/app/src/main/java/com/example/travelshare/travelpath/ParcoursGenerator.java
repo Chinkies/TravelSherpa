@@ -23,6 +23,7 @@ public class ParcoursGenerator {
         int maxEffortTolerable = getValeurEffort(prefs.getNiveauEffortMax());
 
         for (Lieu lieu : toutLeslieux) {
+
             if (!prefs.getActivites().isEmpty() && !prefs.getActivites().contains(lieu.getCategorie())) {
                 continue;
             }
@@ -106,10 +107,12 @@ public class ParcoursGenerator {
     private Parcours constuireParcours(String nomOption, List<Lieu> lieuTries, double budgetMax, int nbJours) {
         List<Etape> etapes = new ArrayList<>();
         List<Lieu> restosDispos = new ArrayList<>();
+        List<Lieu> barsDispos = new ArrayList<>();
         List<Lieu> activitesDispos = new ArrayList<>();
 
         for (Lieu l : lieuTries) {
             if ("Restauration".equals(l.getCategorie())) restosDispos.add(l);
+            else if ("Bars".equals(l.getCategorie())) barsDispos.add(l);
             else activitesDispos.add(l);
         }
 
@@ -121,26 +124,35 @@ public class ParcoursGenerator {
             int tempsEcouleCeJour = 0;
             boolean aMangeCeMidi = false;
 
-            while (tempsEcouleCeJour < 480) {
+            while (tempsEcouleCeJour < 420) {
                 Lieu candidatRetenu = null;
                 float distanceMin = Float.MAX_VALUE;
                 int tempsTrajetRetenu = 0;
 
-                boolean cEstLHeureDuResto = (!aMangeCeMidi && tempsEcouleCeJour >= 120 && !restosDispos.isEmpty());
-                List<Lieu> listeCible = cEstLHeureDuResto ? restosDispos : activitesDispos;
+                boolean cEstLHeureDuResto = (!aMangeCeMidi && tempsEcouleCeJour >= 180 && tempsEcouleCeJour <= 300 && !restosDispos.isEmpty());
 
-                if (listeCible.isEmpty() && cEstLHeureDuResto) {
+                List<Lieu> listeCible;
+                if (cEstLHeureDuResto) {
+                    listeCible = restosDispos;
+                } else {
                     listeCible = activitesDispos;
-                    aMangeCeMidi = true;
                 }
 
-                if (listeCible.isEmpty()) break;
+                if (listeCible.isEmpty()) {
+                    if (cEstLHeureDuResto) {
+                        aMangeCeMidi = true;
+                        continue;
+                    }
+                    break;
+                }
 
                 for (Lieu l : listeCible) {
                     float distance = (dernierLieuVisite == null) ? 0 : UtilitaireGeographique.calculerDistance(dernierLieuVisite, l);
                     int trajet = (dernierLieuVisite == null) ? 0 : UtilitaireGeographique.estimerTempsMarche(distance);
 
-                    if (tempsEcouleCeJour + l.getDureeVisiteMinute() + trajet <= 480
+                    int dureeLieu = l.getDureeVisiteMinute();
+
+                    if (tempsEcouleCeJour + dureeLieu + trajet <= 480
                             && budgetDepense + l.getPrixVisite() <= budgetMax) {
                         if (distance < distanceMin) {
                             distanceMin = distance;
@@ -152,7 +164,9 @@ public class ParcoursGenerator {
 
                 if (candidatRetenu != null) {
                     String creneau;
-                    if (cEstLHeureDuResto) {
+                    int dureeEffective = candidatRetenu.getDureeVisiteMinute();
+
+                    if ("Restauration".equals(candidatRetenu.getCategorie())) {
                         creneau = "Déjeuner";
                         aMangeCeMidi = true;
                         restosDispos.remove(candidatRetenu);
@@ -160,14 +174,45 @@ public class ParcoursGenerator {
                         creneau = (tempsEcouleCeJour < 240) ? "Matin" : "Après-midi";
                         activitesDispos.remove(candidatRetenu);
                     }
+
                     etapes.add(new Etape(candidatRetenu, creneau, (int) distanceMin, tempsTrajetRetenu, jourActuel));
                     budgetDepense += candidatRetenu.getPrixVisite();
-                    tempsEcouleCeJour += (candidatRetenu.getDureeVisiteMinute() + tempsTrajetRetenu);
-                    dureeTotale += (candidatRetenu.getDureeVisiteMinute() + tempsTrajetRetenu);
+                    tempsEcouleCeJour += (dureeEffective + tempsTrajetRetenu);
+                    dureeTotale += (dureeEffective + tempsTrajetRetenu);
                     dernierLieuVisite = candidatRetenu;
                 } else {
                     if (cEstLHeureDuResto) aMangeCeMidi = true;
                     else break;
+                }
+            }
+
+            if (!barsDispos.isEmpty()) {
+                Lieu barRetenu = null;
+                float distMinBar = Float.MAX_VALUE;
+                int trajetBar = 0;
+
+                for (Lieu b : barsDispos) {
+                    float distance = (dernierLieuVisite == null) ? 0 : UtilitaireGeographique.calculerDistance(dernierLieuVisite, b);
+                    int trajet = (dernierLieuVisite == null) ? 0 : UtilitaireGeographique.estimerTempsMarche(distance);
+
+                    if (budgetDepense + b.getPrixVisite() <= budgetMax) {
+                        if (distance < distMinBar) {
+                            distMinBar = distance;
+                            barRetenu = b;
+                            trajetBar = trajet;
+                        }
+                    }
+                }
+
+                if (barRetenu != null) {
+                    etapes.add(new Etape(barRetenu, "Soirée", (int) distMinBar, trajetBar, jourActuel));
+                    budgetDepense += barRetenu.getPrixVisite();
+
+                    int dureeBar = 45;
+                    dureeTotale += (dureeBar + trajetBar);
+
+                    dernierLieuVisite = barRetenu;
+                    barsDispos.remove(barRetenu);
                 }
             }
         }
