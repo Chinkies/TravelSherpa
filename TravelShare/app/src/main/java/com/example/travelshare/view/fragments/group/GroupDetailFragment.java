@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.travelshare.R;
 import com.example.travelshare.adapter.PostAdapter;
 import com.example.travelshare.model.Post;
@@ -39,6 +41,7 @@ public class GroupDetailFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private PostAdapter postAdapter;
+    private ImageView groupImage;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,6 +64,7 @@ public class GroupDetailFragment extends Fragment {
         }
 
         TextView title = view.findViewById(R.id.group_detail_name);
+        groupImage = view.findViewById(R.id.group_detail_image);
 
         recyclerView = view.findViewById(R.id.group_detail_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -83,7 +87,9 @@ public class GroupDetailFragment extends Fragment {
 
             @Override
             public void onMoreClick(View v, Post post) {
-                showPostMenu(requireContext(), v, post);
+                User currentUser = userViewModel.getCurrentUser().getValue();
+                String uid = (currentUser != null) ? currentUser.getId() : "";
+                showPostMenu(requireContext(), v, post, uid, postViewModel);
             }
 
             @Override
@@ -113,6 +119,14 @@ public class GroupDetailFragment extends Fragment {
             if (group != null) {
                 title.setText(group.getGroupName());
                 postViewModel.loadGroupPosts(group.getId());
+
+                if (group.getImageUrl() != null && !group.getImageUrl().isEmpty()) {
+                    Glide.with(this)
+                            .load(group.getImageUrl())
+                            .placeholder(R.drawable.default_user)
+                            .circleCrop()
+                            .into(groupImage);
+                }
 
                 String currentUserId = authViewModel.getCurrentUser().getUid();
                 View btnManage = view.findViewById(R.id.group_detail_manage);

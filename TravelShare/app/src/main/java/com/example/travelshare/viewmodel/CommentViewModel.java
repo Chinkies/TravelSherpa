@@ -75,4 +75,20 @@ public class CommentViewModel extends ViewModel {
             }
         });
     }
+
+    public void deleteComment(String commentId, String postId) {
+        isLoading.setValue(true);
+        commentRepository.deleteComment(commentId, new FireStoreCallBack<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                fetchComment(postId);
+            }
+
+            @Override
+            public void onFailure(String e) {
+                errorMessage.postValue(e);
+                isLoading.postValue(false);
+            }
+        });
+    }
 }

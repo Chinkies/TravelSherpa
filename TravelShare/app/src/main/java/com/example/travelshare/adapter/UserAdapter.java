@@ -27,6 +27,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private int layoutId;
     private OnUserActionListener listener;
     private boolean isSearchMode;
+    private String currentUserId;
 
     public UserAdapter(int layoutId, OnUserActionListener listener) {
         this.layoutId = layoutId;
@@ -36,6 +37,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     public void setSearchMode(boolean searchMode) {
         this.isSearchMode = searchMode;
+    }
+
+    public void setCurrentUserId(String currentUserId) {
+        this.currentUserId = currentUserId;
     }
 
     public void setUsers(List<User> users) {
@@ -68,7 +73,15 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             if (holder.btnDelete != null) holder.btnDelete.setVisibility(View.GONE);
             if (holder.btnAddAdmin != null) holder.btnAddAdmin.setVisibility(View.VISIBLE);
         } else {
-            if (holder.btnDelete != null) holder.btnDelete.setVisibility(View.VISIBLE);
+            // Hide delete button if the user is the current user
+            if (holder.btnDelete != null) {
+                if (currentUserId != null && user.getId().equals(currentUserId)) {
+                    holder.btnDelete.setVisibility(View.GONE);
+                } else {
+                    holder.btnDelete.setVisibility(View.VISIBLE);
+                }
+            }
+
             if (holder.btnAddAdmin != null) {
                 if (layoutId == R.layout.item_member) {
                     holder.btnAddAdmin.setVisibility(View.VISIBLE);

@@ -3,6 +3,7 @@ package com.example.travelshare.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -19,8 +20,19 @@ import java.util.Locale;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
 
+    public interface OnCommentClickListener {
+        void onMoreClick(View view, Comment comment);
+    }
+
     private List<Comment> commentList = new ArrayList<>();
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE);
+    private final OnCommentClickListener listener;
+    private final String currentUserId;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRANCE);
+
+    public CommentAdapter(String currentUserId, OnCommentClickListener listener) {
+        this.currentUserId = currentUserId;
+        this.listener = listener;
+    }
 
     public void setComments(List<Comment> comments) {
         this.commentList = comments;
@@ -55,6 +67,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         } else {
             holder.ProfilPicture.setImageResource(R.drawable.default_user);
         }
+
+        holder.btnMore.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onMoreClick(v, currentComment);
+            }
+        });
     }
 
     @Override
@@ -65,6 +83,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     static class CommentViewHolder extends RecyclerView.ViewHolder {
         TextView Author, Text, Date;
         ImageView ProfilPicture;
+        ImageButton btnMore;
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -72,6 +91,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             Text = itemView.findViewById(R.id.comment_description);
             Date = itemView.findViewById(R.id.comment_date);
             ProfilPicture = itemView.findViewById(R.id.comment_profil_picture);
+            btnMore = itemView.findViewById(R.id.comment_btn_more);
         }
     }
 }

@@ -64,7 +64,9 @@ public class FeedFragment extends Fragment {
 
             @Override
             public void onMoreClick(View v, Post post) {
-                showPostMenu(requireContext(), view, post);
+                User currentUser = userViewModel.getCurrentUser().getValue();
+                String uid = (currentUser != null) ? currentUser.getId() : "";
+                showPostMenu(requireContext(), v, post, uid, postViewModel);
             }
 
             @Override

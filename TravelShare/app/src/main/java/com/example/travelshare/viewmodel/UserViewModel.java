@@ -1,5 +1,6 @@
 package com.example.travelshare.viewmodel;
 
+import android.content.Context;
 import android.net.Uri;
 
 import androidx.lifecycle.LiveData;
@@ -11,15 +12,13 @@ import com.example.travelshare.model.Post;
 import com.example.travelshare.model.User;
 import com.example.travelshare.repository.FireStoreCallBack;
 import com.example.travelshare.repository.GroupRepository;
+import com.example.travelshare.repository.ImgBBResponse;
 import com.example.travelshare.repository.ParcoursRepository;
 import com.example.travelshare.repository.PostRepository;
 import com.example.travelshare.repository.StorageRepository;
 import com.example.travelshare.repository.UserRepository;
 import com.example.travelshare.travelpath.Parcours;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserViewModel extends ViewModel {
@@ -167,12 +166,12 @@ public class UserViewModel extends ViewModel {
             }
         });
     }
-    public void updateProfileWithImage(String userId, String pseudo, String desc, Uri imageUri) {
+    public void updateProfileWithImage(Context context, String userId, String pseudo, String desc, Uri imageUri) {
         isLoading.setValue(true);
-        storageRepository.uploadGroupImage(imageUri, userId, new FireStoreCallBack<String>() {
+        storageRepository.uploadImage(context, imageUri, userId, new FireStoreCallBack<ImgBBResponse.Data>() {
             @Override
-            public void onSuccess(String imageUrl) {
-                userRepository.updateProfileFull(userId, pseudo, desc, imageUrl, new FireStoreCallBack<Void>() {
+            public void onSuccess(ImgBBResponse.Data data) {
+                userRepository.updateProfileFull(userId, pseudo, desc, data.getUrl(), new FireStoreCallBack<Void>() {
                     @Override
                     public void onSuccess(Void result) {
                         loadCurrentUser(userId);

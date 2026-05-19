@@ -225,7 +225,7 @@ public class PublishFragment extends Fragment {
         String indication = inputIndication.getText().toString();
         String address = inputLocalisation.getText().toString();
 
-        com.example.travelshare.model.User firestoreUser = userViewModel.getSelectedUser().getValue();
+        com.example.travelshare.model.User firestoreUser = userViewModel.getCurrentUser().getValue();
 
         if (firestoreUser == null) {
             Toast.makeText(getContext(), "Données utilisateur non chargées, réessayez...", Toast.LENGTH_SHORT).show();

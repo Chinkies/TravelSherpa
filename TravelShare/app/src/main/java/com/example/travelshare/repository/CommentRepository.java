@@ -23,6 +23,13 @@ public class CommentRepository {
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
+    public void deleteComment(String commentId, FireStoreCallBack<Void> callback) {
+        db.collection(COLLECTION_COMMENTS).document(commentId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
     public void fetchCommentsForPost(String postId, FireStoreCallBack<List<Comment>> callback) {
         db.collection(COLLECTION_COMMENTS)
                 .whereEqualTo("postId", postId)

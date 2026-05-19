@@ -15,6 +15,7 @@ public class Post {
     private String indication;
     private Date date;
     private String imageUrl;
+    private String imageDeleteUrl;
     private String authorProfilPictureUrl;
     private List<String> likers;
     private int likesCount;
@@ -52,6 +53,7 @@ public class Post {
     public String getIndication() { return indication; }
     public Date getDate() { return date; }
     public String getImageUrl() { return imageUrl; }
+    public String getImageDeleteUrl() { return imageDeleteUrl; }
     public String getAuthorProfilPictureUrl() { return authorProfilPictureUrl; }
     public List<String> getLikers() { return likers; }
     public int getLikesCount() { return likesCount; }
@@ -69,6 +71,7 @@ public class Post {
     public void setIndication(String indication) { this.indication = indication; }
     public void setDate(Date date) { this.date = date; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setImageDeleteUrl(String imageDeleteUrl) { this.imageDeleteUrl = imageDeleteUrl; }
     public void setAuthorProfilPictureUrl(String authorProfilPictureUrl) { this.authorProfilPictureUrl = authorProfilPictureUrl; }
     public void setLikers(List<String> likers) { this.likers = likers; }
     public void setLikesCount(int likesCount) { this.likesCount = likesCount; }
